@@ -3,47 +3,68 @@
 **Building for Good Hackathon — Affordability track**
 Data Science Alliance @ UC San Diego (Halicioglu School of Data Science and Computing)
 
-## The pitch
+## The finding
 
-San Diego renters are being priced out. We're building a two-part story:
+**44.4% of San Diego households — 520,257 of 1,171,123 — earn less than their
+basic-needs budget requires.** For the average household in that position, the
+gap is about $3,383 every month, and housing is 42.5% of what they need.
 
-1. **The map** (`map/`) — a ZIP-code level view of San Diego showing which
-   areas are most "at risk," using a **runway** metric: months until rent
-   burden crosses 50% of income, based on current rent vs. income growth
-   trends. This answers *"who's at risk?"*
-2. **The policy calculator** (`policy_calculator/`) — takes the same
-   per-ZIP data and recomputes runway under a few policy levers (minimum
-   wage increase, rent stabilization, housing vouchers) to answer the
-   judges' natural follow-up: *"okay, so what would actually fix it?"*
+This project asks the follow-up: *what would it actually take to change that?*
 
-Both pieces read from one shared file: `data/zips.csv`. See
-`data/README.md` for the schema. Nobody needs to touch anyone else's code —
-build against the CSV.
+## The two halves
+
+1. **The map** (`map/`) — where households fall below their living budget,
+   by census tract. Answers *who is at risk*.
+2. **The policy calculator** (`policy_calculator/`) — three policy levers,
+   recomputed across all 1.17M households, showing how many are lifted above
+   the line. Answers *what would help*.
+
+Open **`policy_calculator/prototype.html`** in a browser. No build, no server,
+no dependencies.
+
+## ⚠️ Read this before building on the data
+
+The dataset is **not** what the project was originally scoped against, and the
+difference matters:
+
+- **It is a single 2024 snapshot.** There are no growth rates and no time
+  dimension. Any metric defined as "months until X crosses Y" — the original
+  runway idea — **cannot be computed from this data.** That premise is retired.
+- **Geography is census tracts, not ZIP codes** (`geoid`, 2020 vintage).
+- **Rows are synthetic households**, cloned from 55,218 PUMS donors. Valid for
+  distributions and geography; never for claims about individual households.
+  Do not deduplicate — it would silently delete much of the population.
+- **`housing_cost_month` is required rent, not rent paid.** It is the HUD
+  FY2024 Small Area Fair Market Rent for the tract at the household's implied
+  bedroom count, and it is not tenure-adjusted.
+
+Full details in `data/README.md` and the organizers' dictionary in `data/raw/`.
 
 ## Repo layout
 
 ```
-data/                shared input data (zips.csv) + schema docs
-map/                 the risk map (runway-by-ZIP)
-policy_calculator/   "what would help" scenario calculator
-outputs/             generated charts/tables (gitignored except .gitkeep)
+data/
+  raw/                 organizers' source files, unmodified
+  build_dataset.py     raw microdata -> tracts.csv + grid.json
+  tracts.csv           727 census tracts, baseline figures
+  grid.json            exact rates at all 315 lever combinations
+policy_calculator/
+  prototype.html       ← the demo
+  sync_data.py         regenerates the page's embedded data from grid.json
+map/                   the tract-level risk map
+docs/                  team docs, incl. a plain-language git guide
 ```
 
-## Team workflow
+## Rebuilding from source
 
-We're working as a group in this repo — everyone forks or branches, opens
-a PR, and we merge into `main`. See `CONTRIBUTING.md` for the exact steps.
+```bash
+pip install -r data/requirements.txt
+cd data && python build_dataset.py --validate    # ~2 min over 1.17M rows
+cd ../policy_calculator && python sync_data.py
+```
 
-- **Team leads / registration:** Shereen Shirazi, Dr. Adir, Ryan Lopez
-- **Challenge track:** Affordability
-- Lock in scope early — each sub-piece should be self-contained enough to
-  demo independently, then we slot them together for the joint rehearsal.
+`--validate` checks the model against the organizers' own
+`economically_vulnerable` flag and fails loudly if it drifts.
 
-## Demo flow (tentative)
-
-1. Map: which ZIPs are running out of runway, and how fast.
-2. Calculator: here's what buys that runway back (bar chart / table,
-   before vs. after, per policy lever).
-3. Close: recommended next steps / ask.
-
-Aim for ~1-2 min per section so the joint walkthrough stays tight.
+New to git, or unsure how branches and PRs work here?
+[`docs/git-for-teammates.md`](docs/git-for-teammates.md) — five minutes.

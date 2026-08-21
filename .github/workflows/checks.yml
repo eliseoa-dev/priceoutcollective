@@ -1,0 +1,50 @@
+name: checks
+
+# Small on purpose. The failure mode that would actually hurt us is a stale
+# demo: data/grid.json changes but prototype.html's embedded copy doesn't, and
+# we present numbers the pipeline no longer produces. That is what this guards.
+#
+# Rebuilding grid.json from the 1.17M-row source takes a couple of minutes, so
+# CI does not do it on every push — it verifies the committed artifacts agree
+# with each other, and validates the model whenever the pipeline itself changes.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r data/requirements.txt
+
+      - name: Prototype matches data/grid.json
+        working-directory: policy_calculator
+        run: |
+          python sync_data.py --check || {
+            echo ""
+            echo "The prototype's embedded data is out of date."
+            echo "Fix: cd policy_calculator && python sync_data.py"
+            exit 1
+          }
+
+      - name: Pipeline reproduces the organizers' vulnerability flag
+        working-directory: data
+        run: |
+          python build_dataset.py --validate
+          # The rebuild must be byte-identical to what is committed, or the
+          # committed artifacts were generated from something else.
+          git diff --exit-code -- tracts.csv grid.json || {
+            echo ""
+            echo "Rebuilding produced different artifacts than the ones committed."
+            echo "Fix: cd data && python build_dataset.py, then re-run sync_data.py"
+            exit 1
+          }

@@ -24,7 +24,9 @@ from sklearn.metrics import roc_auc_score, accuracy_score, classification_report
 import xgboost as xgb
 
 HERE = Path(__file__).parent
-DATASET_PATH = HERE / ".." / "data" / "san_diego_ca_hlb_hackathon_2024_20260811.csv"
+# The committed source is the gzip; pandas reads it directly, so there is no
+# need for an unpacked 175 MB copy that would not be in the repo anyway.
+DATASET_PATH = HERE / ".." / "data" / "raw" / "san_diego_ca_hlb_hackathon_2024.csv.gz"
 OUTPUT_DIR = HERE / ".." / "outputs"
 
 NUMERIC_FEATURES = [
