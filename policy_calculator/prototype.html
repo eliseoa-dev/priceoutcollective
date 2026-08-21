@@ -144,6 +144,16 @@ h1 em { font-style: italic; color: var(--accent); }
   color: var(--ink-2);
 }
 .provenance strong { color: var(--warn); font-weight: 600; }
+
+.provenance.verified {
+  background: var(--ok-bg);
+  border-color: color-mix(in srgb, var(--ok) 30%, transparent);
+}
+.provenance.verified strong { color: var(--ok); }
+.provenance.verified .mark {
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+}
 .provenance .mark {
   font-family: "IBM Plex Mono", monospace;
   font-size: 11px;
@@ -678,26 +688,29 @@ runway    = smallest t where burden(t) &ge; 0.50
   "use strict";
 
   // ---------------------------------------------------------------
-  // DATA — placeholder rows matching the agreed data/zips.csv schema.
-  // Replace wholesale with the real export; nothing below needs to change.
+  // DATA — generated from data/zips.csv. Do not hand-edit this block:
+  // update the CSV, then run `python sync_data.py` to regenerate it.
   // ---------------------------------------------------------------
+  /* BEGIN GENERATED DATA */
   var ZIPS = [
-    { zip:"92113", area:"Logan Heights",      income:45000,  rent:1900, rentG:.055, incG:.020, featured:true  },
-    { zip:"92173", area:"San Ysidro",         income:44000,  rent:1850, rentG:.055, incG:.020, featured:true  },
-    { zip:"92105", area:"City Heights",       income:47000,  rent:1950, rentG:.060, incG:.020, featured:true  },
-    { zip:"92102", area:"Golden Hill",        income:52000,  rent:2100, rentG:.065, incG:.025, featured:true  },
-    { zip:"92154", area:"Otay Mesa",          income:53000,  rent:2050, rentG:.060, incG:.025, featured:true  },
-    { zip:"92115", area:"Rolando",            income:61000,  rent:2300, rentG:.065, incG:.030, featured:true  },
-    { zip:"92114", area:"Encanto",            income:58000,  rent:2200, rentG:.060, incG:.030, featured:true  },
-    { zip:"92101", area:"Downtown",           income:68000,  rent:2450, rentG:.070, incG:.030, featured:true  },
-    { zip:"92104", area:"North Park",         income:72000,  rent:2400, rentG:.062, incG:.031, featured:false },
-    { zip:"92116", area:"Normal Heights",     income:69000,  rent:2350, rentG:.061, incG:.030, featured:false },
-    { zip:"92111", area:"Linda Vista",        income:76000,  rent:2450, rentG:.055, incG:.032, featured:false },
-    { zip:"92126", area:"Mira Mesa",          income:84000,  rent:2600, rentG:.050, incG:.035, featured:false },
-    { zip:"92117", area:"Clairemont",         income:81000,  rent:2550, rentG:.052, incG:.034, featured:false },
-    { zip:"92109", area:"Pacific Beach",      income:95000,  rent:3100, rentG:.055, incG:.036, featured:false },
-    { zip:"92037", area:"La Jolla",           income:145000, rent:3800, rentG:.045, incG:.040, featured:false }
+    { zip:"92113", area:"Logan Heights",  income:45000,   rent:1900,  rentG:.055,  incG:.02,   featured:true },
+    { zip:"92173", area:"San Ysidro",     income:44000,   rent:1850,  rentG:.055,  incG:.02,   featured:true },
+    { zip:"92105", area:"City Heights",   income:47000,   rent:1950,  rentG:.06,   incG:.02,   featured:true },
+    { zip:"92102", area:"Golden Hill",    income:52000,   rent:2100,  rentG:.065,  incG:.025,  featured:true },
+    { zip:"92154", area:"Otay Mesa",      income:53000,   rent:2050,  rentG:.06,   incG:.025,  featured:true },
+    { zip:"92115", area:"Rolando",        income:61000,   rent:2300,  rentG:.065,  incG:.03,   featured:true },
+    { zip:"92114", area:"Encanto",        income:58000,   rent:2200,  rentG:.06,   incG:.03,   featured:true },
+    { zip:"92101", area:"Downtown",       income:68000,   rent:2450,  rentG:.07,   incG:.03,   featured:true },
+    { zip:"92104", area:"North Park",     income:72000,   rent:2400,  rentG:.062,  incG:.031,  featured:false },
+    { zip:"92116", area:"Normal Heights", income:69000,   rent:2350,  rentG:.061,  incG:.03,   featured:false },
+    { zip:"92111", area:"Linda Vista",    income:76000,   rent:2450,  rentG:.055,  incG:.032,  featured:false },
+    { zip:"92126", area:"Mira Mesa",      income:84000,   rent:2600,  rentG:.05,   incG:.035,  featured:false },
+    { zip:"92117", area:"Clairemont",     income:81000,   rent:2550,  rentG:.052,  incG:.034,  featured:false },
+    { zip:"92109", area:"Pacific Beach",  income:95000,   rent:3100,  rentG:.055,  incG:.036,  featured:false },
+    { zip:"92037", area:"La Jolla",       income:145000,  rent:3800,  rentG:.045,  incG:.04,   featured:false }
   ];
+  var DATA_IS_PLACEHOLDER = true;
+  /* END GENERATED DATA */
 
   var CRISIS = 0.50;      // runway target: burden crosses half of income
   var AFFORD = 0.30;      // HUD cost-burden line
@@ -1016,6 +1029,19 @@ runway    = smallest t where burden(t) &ge; 0.50
     document.getElementById("table-view").hidden = chart;
     this.textContent = chart ? "Show as table" : "Show as chart";
   });
+
+  // The provenance banner tells the truth automatically: sync_data.py sets
+  // DATA_IS_PLACEHOLDER, so nobody has to remember to take the warning down —
+  // or, worse, forget to put it back.
+  if (!DATA_IS_PLACEHOLDER) {
+    var banner = document.querySelector(".provenance");
+    banner.classList.add("verified");
+    document.getElementById("prov-mark").textContent = "LIVE DATA";
+    document.getElementById("prov-text").innerHTML =
+      "<strong>Running on the project's measured dataset.</strong> " +
+      "Figures come from <code>data/zips.csv</code> as exported for the map, " +
+      "so both halves of the demo are reading the same numbers.";
+  }
 
   renderLegend();
   renderAxis();
