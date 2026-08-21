@@ -30,6 +30,9 @@
     .toolbar { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:10px; border-bottom:1px solid var(--rule); background:rgba(255,253,250,.96); }
     .tabs { display:flex; gap:5px; }
     button { border:1px solid transparent; border-radius:2px; padding:10px 14px; background:transparent; color:var(--muted); cursor:pointer; font:500 12px/1 "DM Mono", monospace; }
+    .tabs a { display:inline-flex; align-items:center; gap:4px; text-decoration:none; border:1px solid transparent; border-radius:2px; padding:10px 14px; background:transparent; color:var(--muted); font:500 12px/1 "DM Mono", monospace; }
+    .tabs a:hover { border-color:var(--rule); color:var(--ink); }
+    .tabs a:focus-visible { outline:2px solid var(--red); outline-offset:2px; }
     button:hover { border-color:var(--rule); color:var(--ink); }
     button[aria-selected="true"] { background:var(--ink); color:var(--sheet); }
     button:focus-visible, .full:focus-visible { outline:2px solid var(--red); outline-offset:2px; }
@@ -61,6 +64,7 @@
       .toolbar { align-items:flex-start; }
       .tabs { flex:1; }
       button { flex:1; padding:11px 8px; font-size:10px; }
+      .tabs a { flex:1; padding:11px 8px; font-size:10px; justify-content:center; }
       .full { display:none; }
       iframe { height:calc(100vh - 58px); min-height:680px; }
       footer { padding:16px 18px 22px; }
@@ -86,23 +90,15 @@
     <section class="demo" aria-label="PriceOut interactive demo">
       <div class="toolbar">
         <div class="tabs" role="tablist" aria-label="Choose a demo view">
-          <button id="wage-tab" role="tab" aria-selected="false" aria-controls="wage-panel">Wage Distance</button>
-          <button id="calculator-tab" role="tab" aria-selected="false" aria-controls="calculator-panel">Policy Calculator</button>
-          <button id="gap-tab" role="tab" aria-selected="true" aria-controls="gap-panel">County Map</button>
           <button id="about-tab" role="tab" aria-selected="false" aria-controls="about-panel">Team &amp; Credits</button>
+          <button id="gap-tab" role="tab" aria-selected="true" aria-controls="gap-panel">County Map</button>
+          <button id="calculator-tab" role="tab" aria-selected="false" aria-controls="calculator-panel">Policy Calculator</button>
+          <button id="wage-tab" role="tab" aria-selected="false" aria-controls="wage-panel">Wage Distance</button>
+          <a href="one-raise-away/index.html" target="_blank" rel="noopener">One Raise Away ↗</a>
         </div>
         <a class="full" id="full-link" href="policy_calculator/prototype.html">Open this view full screen ↗</a>
       </div>
 
-      <div class="panel" id="wage-panel" role="tabpanel" aria-labelledby="wage-tab" hidden>
-        <iframe title="Wage distance analysis: how large a raise would close each household's own gap" data-src="policy_calculator/wage_distance.html" loading="lazy"></iframe>
-      </div>
-      <div class="panel" id="calculator-panel" role="tabpanel" aria-labelledby="calculator-tab" hidden>
-        <iframe title="Interactive policy calculator" data-src="policy_calculator/prototype.html" loading="lazy"></iframe>
-      </div>
-      <div class="panel active" id="gap-panel" role="tabpanel" aria-labelledby="gap-tab">
-        <iframe title="Interactive San Diego County affordability map — click a tract to see what its own budget gap is made of" src="map/gap_map.html" loading="eager"></iframe>
-      </div>
       <div class="panel" id="about-panel" role="tabpanel" aria-labelledby="about-tab" hidden>
         <div class="about">
           <h2>Team &amp; Credits</h2>
@@ -124,10 +120,19 @@
               <a href="https://github.com/eliseoa-dev/priceoutcollective/blob/main/docs/ADDITIONAL_FINDINGS.md">Additional Findings</a>.
             </p>
           </div>
-          <p>With review and feedback from <b>Richard</b>.</p>
+          <p>With review and feedback from <b>Richard</b>, who also built <a href="one-raise-away/index.html" target="_blank" rel="noopener">One Raise Away</a>, a companion app on rent-raise dynamics and early storage-auction signals.</p>
           <p>Household Living Budget data modeled from the organizers' 2024 hackathon dataset — see <a href="policy_calculator/prototype.html#method">Method &amp; limits</a> for full methodology.</p>
           <p class="rights">© 2026 PriceOut Collective. Built during a hackathon for demonstration purposes. Not for reproduction or commercial use without permission.</p>
         </div>
+      </div>
+      <div class="panel active" id="gap-panel" role="tabpanel" aria-labelledby="gap-tab">
+        <iframe title="Interactive San Diego County affordability map — click a tract to see what its own budget gap is made of" src="map/gap_map.html" loading="eager"></iframe>
+      </div>
+      <div class="panel" id="calculator-panel" role="tabpanel" aria-labelledby="calculator-tab" hidden>
+        <iframe title="Interactive policy calculator" data-src="policy_calculator/prototype.html" loading="lazy"></iframe>
+      </div>
+      <div class="panel" id="wage-panel" role="tabpanel" aria-labelledby="wage-tab" hidden>
+        <iframe title="Wage distance analysis: how large a raise would close each household's own gap" data-src="policy_calculator/wage_distance.html" loading="lazy"></iframe>
       </div>
     </section>
 
@@ -147,10 +152,10 @@
     (function () {
       "use strict";
       var views = {
-        wage: { tab: "wage-tab", panel: "wage-panel", href: "policy_calculator/wage_distance.html" },
-        calculator: { tab: "calculator-tab", panel: "calculator-panel", href: "policy_calculator/prototype.html" },
+        about: { tab: "about-tab", panel: "about-panel" },
         gap: { tab: "gap-tab", panel: "gap-panel", href: "map/gap_map.html" },
-        about: { tab: "about-tab", panel: "about-panel" }
+        calculator: { tab: "calculator-tab", panel: "calculator-panel", href: "policy_calculator/prototype.html" },
+        wage: { tab: "wage-tab", panel: "wage-panel", href: "policy_calculator/wage_distance.html" }
       };
 
       function select(name, updateHash) {
