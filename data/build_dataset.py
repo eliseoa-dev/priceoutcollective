@@ -136,6 +136,81 @@ def build_tracts(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+INCOME_BANDS = [
+    "Less than $15,000", "$15,000 to $24,999", "$25,000 to $34,999",
+    "$35,000 to $49,999", "$50,000 to $74,999", "$75,000 to $99,999",
+    "$100,000 to $149,999", "$150,000 to $199,999", "$200,000 or more",
+]
+
+
+def build_who(df: pd.DataFrame) -> dict:
+    """Who is falling short — by income, by household composition, by size.
+
+    The headline the aggregate rate hides: nearly half of the households below
+    their budget are not low-income by any ordinary reading of the word.
+    """
+    vuln = df.economically_vulnerable == 1
+    n_vuln = int(vuln.sum())
+    gap_month = (df.hlb_year - df.hh_income) / 12
+
+    def summarize(mask: pd.Series, label: str) -> dict:
+        n = int(mask.sum())
+        if n == 0:
+            return None
+        return {
+            "label": label,
+            "households": n,
+            "rate": round(float(df.loc[mask, "economically_vulnerable"].mean()), 4),
+            "shareOfVulnerable": round(float((mask & vuln).sum()) / n_vuln, 4),
+            "medianGapMonth": round(float(gap_month[mask & vuln].median())),
+        }
+
+    kids_12 = (df.no_schooler + df.no_preschooler + df.no_toddler + df.no_infant) > 0
+    any_kids = kids_12 | (df.no_teenager > 0)
+    single = df.no_adult == 1
+    multi = df.no_adult >= 2
+
+    composition = [
+        summarize(single & any_kids, "One adult, with children"),
+        summarize(multi & any_kids, "Two or more adults, with children"),
+        summarize(single & ~any_kids, "One adult, no children"),
+        summarize(multi & ~any_kids, "Two or more adults, no children"),
+    ]
+
+    sizes = [summarize(df.hh_size == i, f"{i} person" + ("" if i == 1 else "s"))
+             for i in range(1, 6)]
+    sizes.append(summarize(df.hh_size >= 6, "6 or more"))
+
+    bands = []
+    for b in INCOME_BANDS:
+        m = df.hh_income_cat == b
+        s = summarize(m, b)
+        if s:
+            bands.append(s)
+
+    # Tract concentration: is this pockets, or is it everywhere?
+    t = df.groupby("geoid").economically_vulnerable.agg(["size", "sum"])
+    t = t[t["size"] >= MIN_TRACT_HH].sort_values("sum", ascending=False)
+
+    return {
+        "incomeBands": bands,
+        "composition": [c for c in composition if c],
+        "sizes": [s for s in sizes if s],
+        "earning50kPlus": {
+            "households": int((vuln & (df.hh_income >= 50000)).sum()),
+            "share": round(float((vuln & (df.hh_income >= 50000)).sum()) / n_vuln, 4),
+        },
+        "earning100kPlus": {
+            "households": int((vuln & (df.hh_income >= 100000)).sum()),
+            "share": round(float((vuln & (df.hh_income >= 100000)).sum()) / n_vuln, 4),
+        },
+        "concentration": {
+            "tracts": int(len(t)),
+            "top50Share": round(float(t.head(50)["sum"].sum() / t["sum"].sum()), 4),
+        },
+    }
+
+
 def build_grid(df: pd.DataFrame, tracts: pd.DataFrame) -> dict:
     """Exact rates at every lever combination, county-wide and per featured tract."""
     model = Model(df)
@@ -186,6 +261,7 @@ def build_grid(df: pd.DataFrame, tracts: pd.DataFrame) -> dict:
         "note": "Rates are per-million integers (444239 = 44.4239%). Exact, computed on "
                 "all 1,171,123 households — not sampled.",
         "population": int(len(df)),
+        "who": build_who(df),
         "vulnerableCount": int(df.economically_vulnerable.sum()),
         "budget": {
             # Means, not medians: a median of each component would not sum to the
