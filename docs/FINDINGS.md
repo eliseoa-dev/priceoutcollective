@@ -175,3 +175,10 @@ fix was genuine. It was removed anyway, because:
   errors computed at n = 1.17M are ~4.6× too small. County rate CI is ±0.41pp.
 - **Child-household counts carry ±18%** against ACS — the organizers' own weakest
   validated dimension. Every child-related figure inherits that band.
+- **235 households have no member aged 19 or over** — 18-year-olds heading their own
+  household, alone or (38 of them) with an infant. The only subgroup in the release with
+  zero donor cloning, so it is the thinnest sample in the dataset. Every cost component
+  prices normally except transportation, which the budget sets to exactly $0 wherever no
+  adult is present — an assumption that may understate their real cost of living rather
+  than reflect it. All 235 are below their budget; half report zero income. Too small to
+  move any countywide figure, disclosed on the same basis as the `bah_profile` tracts above.

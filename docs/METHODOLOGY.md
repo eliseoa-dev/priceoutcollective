@@ -143,6 +143,15 @@ disclosure, not a correction: both tracts remain in every aggregate.
 - **Retirees cannot be identified.** Age bands stop at "19+", so tax modelling treats all
   budget income as wages for a 40-year-old and payroll tax is charged to every household.
 - **`no_teenager` includes 18-year-olds**, unlike Census "under 18".
+- **235 households have no member aged 19 or over** (`no_adult = 0`) — every one an
+  18-year-old, alone (197) or with an infant (38): a teen parent. Each traces to a distinct,
+  unreplicated PUMS donor, the only subgroup in the release with zero cloning — the thinnest
+  sample in the dataset. Every cost component prices normally for this group except
+  `transp_cost_month`, which is **exactly $0.00 for all 235**, zero variance: the budget
+  assumes a household with no adult present has no transportation need. That assumption may
+  understate their real cost of living rather than reflect it. 100% are `economically_vulnerable`
+  and 49.8% report zero income. Too small to move any countywide figure, kept in every total,
+  not corrected — disclosed on the same basis as the `bah_profile` tracts in §6.
 - **Negative incomes are floored to zero**, so true zeros and censored business losses
   are indistinguishable.
 - **Effective sample size is 55,218, not 1,171,123.** Standard errors computed at the row
