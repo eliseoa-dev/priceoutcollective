@@ -151,19 +151,49 @@ def build_grid(df: pd.DataFrame, tracts: pd.DataFrame) -> dict:
         for c in CAP_STEPS:
             for k in CARE_STEPS:
                 hit = model.hit(w, c, k)
-                county.append(round(float(hit.mean()) * 10000))
-                county_kids.append(round(float(hit[kids].sum()) / n_kids * 10000))
+                county.append(round(float(hit.mean()) * 1000000))
+                county_kids.append(round(float(hit[kids].sum()) / n_kids * 1000000))
                 sums = np.bincount(f_codes, weights=hit[in_featured].astype(float),
                                    minlength=len(featured))
-                per_tract.append([round(v) for v in (sums / f_counts * 10000)])
+                per_tract.append([round(v) for v in (sums / f_counts * 1000000)])
                 done += 1
         print(f"    {done}/{total} combinations", end="\r")
     print(f"    {total}/{total} combinations   ")
 
+    # Median monthly cost components, for the budget-composition view. Taken over
+    # vulnerable households specifically: the county median household is solvent,
+    # so a county-wide median would not describe the households in question.
+    vuln = df[df.economically_vulnerable == 1]
+    components = [
+        ("Housing", "housing_cost_month"),
+        ("Transportation", "transp_cost_month"),
+        ("Healthcare", "healthcare_cost_month"),
+        ("Food", "food_cost_month"),
+        ("Other essentials", "other_cost_month"),
+        ("Childcare", "childcare_cost_month"),
+        ("Broadband", "broadband_cost_month"),
+    ]
+
     return {
-        "note": "Rates are per-10,000 integers (4444 = 44.44%). Exact, computed on "
+        "note": "Rates are per-million integers (444239 = 44.4239%). Exact, computed on "
                 "all 1,171,123 households — not sampled.",
         "population": int(len(df)),
+        "vulnerableCount": int(df.economically_vulnerable.sum()),
+        "budget": {
+            # Means, not medians: a median of each component would not sum to the
+            # median total, so the stack would not reconcile with the bar it sits in.
+            # Means do add up. The shortfall is computed per household and then
+            # medianed, which is a legitimate median of a real quantity.
+            "scope": "mean monthly amounts across the 520,257 vulnerable households",
+            "incomeMonth": round(float(vuln.hh_income.mean()) / 12),
+            "budgetMonth": round(float(vuln.hlb_year.mean()) / 12),
+            "taxMonth": round(float(vuln.hlb_taxes_year.mean()) / 12),
+            "medianShortfallMonth": round(float((vuln.hlb_year - vuln.hh_income).median()) / 12),
+            "components": [
+                {"name": n, "amount": round(float(vuln[c].mean()))}
+                for n, c in components
+            ],
+        },
         "wageSteps": WAGE_STEPS,
         "capSteps": CAP_STEPS,
         "careSteps": CARE_STEPS,
@@ -173,6 +203,9 @@ def build_grid(df: pd.DataFrame, tracts: pd.DataFrame) -> dict:
         "tracts": [
             {
                 "geoid": r.geoid,
+                # The release carries no neighborhood names — only tract and PUMA
+                # codes. We show the PUMA rather than guessing at a place name.
+                "puma": r.puma,
                 "households": int(r.households),
                 "medianIncome": int(r.median_income),
                 "medianHlb": int(r.median_hlb),
@@ -214,7 +247,7 @@ def validate(df: pd.DataFrame, grid: dict) -> None:
                            * len(CARE_STEPS) + CARE_STEPS.index(k))
     print("\n  spot checks (grid value vs freshly computed):")
     for w, c, k in [(0, 0, 0), (25, 0, 0), (0, 30, 0), (0, 0, 50), (25, 30, 50)]:
-        stored = grid["county"][idx(w, c, k)] / 10000
+        stored = grid["county"][idx(w, c, k)] / 1000000
         fresh = float(model.hit(w, c, k).mean())
         flag = "ok" if abs(stored - fresh) < 1e-4 else "MISMATCH"
         print(f"    wage+{w:<3} cap{c:<3} care{k:<4} {stored:7.2%}  {fresh:7.2%}  {flag}")

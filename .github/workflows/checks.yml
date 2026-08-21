@@ -1,10 +1,12 @@
 name: checks
 
-# Small on purpose. Two failure modes matter for the demo:
-#   1. data/zips.csv changes but prototype.html's embedded copy doesn't,
-#      so the thing we present shows stale numbers.
-#   2. someone pushes a Python file that doesn't run.
-# Everything else we can catch by looking at it.
+# Small on purpose. The failure mode that would actually hurt us is a stale
+# demo: data/grid.json changes but prototype.html's embedded copy doesn't, and
+# we present numbers the pipeline no longer produces. That is what this guards.
+#
+# Rebuilding grid.json from the 1.17M-row source takes a couple of minutes, so
+# CI does not do it on every push — it verifies the committed artifacts agree
+# with each other, and validates the model whenever the pipeline itself changes.
 
 on:
   pull_request:
@@ -22,31 +24,27 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r data/requirements.txt -r policy_calculator/requirements.txt
+        run: pip install -r data/requirements.txt
 
-      - name: Prototype data matches data/zips.csv
+      - name: Prototype matches data/grid.json
         working-directory: policy_calculator
         run: |
           python sync_data.py --check || {
             echo ""
             echo "The prototype's embedded data is out of date."
             echo "Fix: cd policy_calculator && python sync_data.py"
-            echo "     (add --real only if data/zips.csv holds measured data)"
             exit 1
           }
 
-      - name: Policy calculator runs
-        working-directory: policy_calculator
-        run: python run.py --featured-only
-
-      - name: Ingest imports a source file
+      - name: Pipeline reproduces the organizers' vulnerability flag
+        working-directory: data
         run: |
-          mkdir -p /tmp/ingest-check
-          cat > /tmp/ingest-check/sample.csv <<'CSV'
-          ZCTA5,Community Name,Median HH Income,Median Gross Rent,Rent YoY,Income YoY
-          92113,Logan Heights,"$45,000","$1,900",5.5%,2.0%
-          92037,La Jolla,"$145,000","$3,800",4.5%,4.0%
-          CSV
-          cd data && python ingest.py /tmp/ingest-check --feature-top 1
-          # Leave the checkout clean: that write clobbered the committed CSV.
-          git checkout -- zips.csv
+          python build_dataset.py --validate
+          # The rebuild must be byte-identical to what is committed, or the
+          # committed artifacts were generated from something else.
+          git diff --exit-code -- tracts.csv grid.json || {
+            echo ""
+            echo "Rebuilding produced different artifacts than the ones committed."
+            echo "Fix: cd data && python build_dataset.py, then re-run sync_data.py"
+            exit 1
+          }

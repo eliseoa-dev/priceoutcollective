@@ -1,128 +1,97 @@
 """
-Regenerate the data block inside prototype.html from data/zips.csv.
+Inject data/grid.json into prototype.html's generated data block.
 
-The CSV is the single source of truth. The HTML embeds its own copy because a
-page opened over file:// cannot fetch a sibling file (browsers block it), so
-that copy has to be generated rather than fetched.
+data/grid.json is the single source of truth. The page embeds its own copy
+because a page opened over file:// cannot fetch a sibling file, so that copy
+has to be generated rather than fetched — and then guarded, or the two drift
+and the demo shows numbers that no longer match the pipeline.
 
-    python sync_data.py            # regenerate, keep the PLACEHOLDER banner
-    python sync_data.py --real     # regenerate and mark the data as measured
-    python sync_data.py --check    # exit 1 if the HTML is out of date
+    python sync_data.py          # regenerate the embedded block
+    python sync_data.py --check  # exit 1 if the page is out of date (CI runs this)
 
-Use --real only once the numbers actually come from the project's dataset.
-It flips the page's banner from a warning to a "live data" note, so it is the
-one flag that changes what we are claiming to judges.
+Regenerate grid.json first with:  cd ../data && python build_dataset.py
 """
 
 from __future__ import annotations
 
 import argparse
-import csv
+import json
 import re
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).parent
-CSV_PATH = HERE / ".." / "data" / "zips.csv"
+GRID_PATH = HERE / ".." / "data" / "grid.json"
 HTML_PATH = HERE / "prototype.html"
 
 BLOCK_RE = re.compile(
-    r"(/\* BEGIN GENERATED DATA \*/\n).*?(\n  /\* END GENERATED DATA \*/)",
+    r"(/\* BEGIN GENERATED DATA \*/\n).*?(\n/\* END GENERATED DATA \*/)",
     re.DOTALL,
 )
 
-TRUTHY = {"true", "1", "yes", "y", "t"}
+REQUIRED_KEYS = {
+    "population", "wageSteps", "capSteps", "careSteps",
+    "county", "countyKids", "tracts", "tractRates", "budget",
+}
 
 
-def js_str(value: str) -> str:
-    """Quote a string for embedding in JS source."""
-    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
-
-
-def js_rate(value: float) -> str:
-    """Render a rate the way the hand-written block did: .055 rather than 0.055."""
-    text = f"{value:.4f}".rstrip("0")
-    return text[1:] if text.startswith("0.") else text
-
-
-def load_rows() -> list[dict]:
-    with open(CSV_PATH, newline="", encoding="utf-8") as fh:
-        rows = list(csv.DictReader(fh))
-    if not rows:
-        sys.exit(f"error: {CSV_PATH} has no data rows")
-
-    required = {"zip", "median_income", "median_rent", "rent_growth_rate", "income_growth_rate"}
-    missing = required - set(rows[0])
-    if missing:
-        sys.exit(f"error: {CSV_PATH} is missing required columns: {', '.join(sorted(missing))}")
-    return rows
-
-
-def build_block(rows: list[dict], placeholder: bool) -> str:
-    # Pad the zip/area fields so the generated source stays scannable by eye.
-    areas = [r.get("area") or r["zip"] for r in rows]
-    area_w = max(len(js_str(a)) for a in areas) + 1
-
-    lines = []
-    for row, area in zip(rows, areas):
-        featured = str(row.get("featured", "")).strip().lower() in TRUTHY
-        lines.append(
-            "    {{ zip:{zip}, area:{area:<{aw}} income:{inc:<8} rent:{rent:<6} "
-            "rentG:{rg:<6} incG:{ig:<6} featured:{feat} }}".format(
-                zip=js_str(row["zip"]),
-                area=js_str(area) + ",",
-                aw=area_w,
-                inc=str(int(float(row["median_income"]))) + ",",
-                rent=str(int(float(row["median_rent"]))) + ",",
-                rg=js_rate(float(row["rent_growth_rate"])) + ",",
-                ig=js_rate(float(row["income_growth_rate"])) + ",",
-                feat="true" if featured else "false",
-            )
+def load_grid() -> dict:
+    if not GRID_PATH.exists():
+        sys.exit(
+            f"error: {GRID_PATH} not found.\n"
+            "       Build it first: cd ../data && python build_dataset.py"
         )
+    grid = json.loads(GRID_PATH.read_text())
 
-    return (
-        "  var ZIPS = [\n"
-        + ",\n".join(lines)
-        + "\n  ];\n"
-        + f"  var DATA_IS_PLACEHOLDER = {'true' if placeholder else 'false'};"
-    )
+    missing = REQUIRED_KEYS - set(grid)
+    if missing:
+        sys.exit(f"error: grid.json is missing key(s): {', '.join(sorted(missing))}")
+
+    expected = len(grid["wageSteps"]) * len(grid["capSteps"]) * len(grid["careSteps"])
+    for key in ("county", "countyKids", "tractRates"):
+        if len(grid[key]) != expected:
+            sys.exit(
+                f"error: grid.json '{key}' has {len(grid[key])} entries, "
+                f"expected {expected} (one per lever combination)."
+            )
+    for row in grid["tractRates"]:
+        if len(row) != len(grid["tracts"]):
+            sys.exit("error: a tractRates row does not match the number of tracts")
+
+    return grid
+
+
+def build_block(grid: dict) -> str:
+    return "var GRID = " + json.dumps(grid, separators=(",", ":")) + ";"
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--real", action="store_true",
-                        help="mark the data as measured (flips the page's provenance banner)")
-    parser.add_argument("--check", action="store_true",
-                        help="exit 1 if prototype.html is out of date; write nothing")
-    args = parser.parse_args()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--check", action="store_true",
+                    help="exit 1 if prototype.html is out of date; write nothing")
+    args = ap.parse_args()
 
-    rows = load_rows()
+    grid = load_grid()
     html = HTML_PATH.read_text(encoding="utf-8")
 
     if not BLOCK_RE.search(html):
-        sys.exit("error: could not find the BEGIN/END GENERATED DATA markers in prototype.html")
+        sys.exit("error: BEGIN/END GENERATED DATA markers not found in prototype.html")
 
-    placeholder = not args.real
-    if args.check:
-        # Preserve whatever the file already claims, so --check tests the rows
-        # rather than failing purely on the banner flag.
-        placeholder = "var DATA_IS_PLACEHOLDER = true;" in html
+    updated = BLOCK_RE.sub(lambda m: m.group(1) + build_block(grid) + m.group(2), html)
 
-    block = build_block(rows, placeholder)
-    updated = BLOCK_RE.sub(lambda m: m.group(1) + block + m.group(2), html)
-
+    combos = len(grid["county"])
     if args.check:
         if updated != html:
-            print("prototype.html is out of date — run: python sync_data.py")
+            print("prototype.html is out of date.")
+            print("Fix: cd policy_calculator && python sync_data.py")
             sys.exit(1)
-        print(f"prototype.html is in sync with {len(rows)} rows from zips.csv")
+        print(f"prototype.html is in sync ({combos} lever combinations, "
+              f"{len(grid['tracts'])} tracts, {grid['population']:,} households)")
         return
 
     HTML_PATH.write_text(updated, encoding="utf-8")
-    status = "PLACEHOLDER" if placeholder else "LIVE DATA"
-    print(f"Synced {len(rows)} ZIPs into prototype.html  (banner: {status})")
-    if not placeholder:
-        print("Provenance banner now claims measured data — make sure that is true.")
+    print(f"Synced grid into prototype.html: {combos} lever combinations, "
+          f"{len(grid['tracts'])} tracts, {grid['population']:,} households")
 
 
 if __name__ == "__main__":
