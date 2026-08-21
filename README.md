@@ -29,10 +29,13 @@ varies.
 
 ## The demo
 
-Open **`policy_calculator/prototype.html`** in a browser. No build, no server, no
-dependencies. Three levers, an eligibility test on the rent subsidy, and a live cost
-figure — all 945 combinations precomputed exactly on all 1.17M households, so nothing is
-estimated in the browser.
+Open **`index.html`** in a browser for the unified demo. One entry page switches between
+the policy calculator and the tract-level county map; each view can also open full screen.
+No build or application server is required.
+
+The calculator includes three levers, an eligibility test on the rent subsidy, and a live
+cost figure — all 945 combinations precomputed exactly on all 1.17M households, so nothing
+is estimated in the browser.
 
 ## Where to look
 
@@ -66,6 +69,7 @@ dictionary in `data/raw/` — **read the Word document before doing analysis.**
 ## Repo layout
 
 ```
+index.html               ← unified demo entry point
 data/
   raw/                 organizers' source files, unmodified
   build_dataset.py     raw microdata -> tracts.csv + grid.json
