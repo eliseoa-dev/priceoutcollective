@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PriceOut Collective: explore who falls below San Diego County's basic-needs budget, where the shortfall is concentrated, and what policy changes could help.">
+  <title>PriceOut Collective — San Diego Affordability</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=DM+Mono:wght@400;500&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink:#171714; --muted:#66665f; --paper:#f5f1e8; --sheet:#fffdfa;
+      --red:#b3292f; --rule:#d9d3c7; --shadow:0 18px 55px rgba(47,39,28,.12);
+    }
+    * { box-sizing:border-box; }
+    html, body { margin:0; min-height:100%; background:var(--paper); color:var(--ink); }
+    body { font-family:Archivo, system-ui, sans-serif; }
+    a { color:inherit; }
+    .shell { width:min(1500px, calc(100% - 28px)); margin:0 auto; padding:24px 0 30px; }
+    header { display:grid; grid-template-columns:1fr auto; gap:24px; align-items:end; padding:8px 4px 22px; }
+    .eyebrow { margin:0 0 8px; font:500 10px/1.3 "DM Mono", monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--red); }
+    h1 { margin:0; font:400 clamp(34px,5vw,68px)/.94 "Libre Caslon Display", Georgia, serif; letter-spacing:-.035em; }
+    .intro { max-width:760px; margin:13px 0 0; color:var(--muted); font-size:14px; line-height:1.55; }
+    .headline { text-align:right; border-left:1px solid var(--rule); padding-left:24px; }
+    .headline b { display:block; font:400 clamp(30px,4vw,52px)/1 "Libre Caslon Display", Georgia, serif; color:var(--red); }
+    .headline span { display:block; margin-top:5px; font:400 10px/1.4 "DM Mono", monospace; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+    .demo { overflow:hidden; background:var(--sheet); border:1px solid var(--rule); box-shadow:var(--shadow); }
+    .toolbar { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:10px; border-bottom:1px solid var(--rule); background:rgba(255,253,250,.96); }
+    .tabs { display:flex; gap:5px; }
+    button { border:1px solid transparent; border-radius:2px; padding:10px 14px; background:transparent; color:var(--muted); cursor:pointer; font:500 12px/1 "DM Mono", monospace; }
+    button:hover { border-color:var(--rule); color:var(--ink); }
+    button[aria-selected="true"] { background:var(--ink); color:var(--sheet); }
+    button:focus-visible, .full:focus-visible { outline:2px solid var(--red); outline-offset:2px; }
+    .full { font:400 10px/1 "DM Mono", monospace; letter-spacing:.06em; text-transform:uppercase; text-underline-offset:4px; color:var(--muted); }
+    .panel { display:none; }
+    .panel.active { display:block; }
+    iframe { display:block; width:100%; height:max(720px, calc(100vh - 175px)); border:0; background:#fff; }
+    footer { display:flex; justify-content:space-between; gap:20px; padding:18px 4px 0; color:var(--muted); font-size:11px; line-height:1.5; }
+    footer span:last-child { text-align:right; }
+    @media (max-width:760px) {
+      .shell { width:100%; padding:0; }
+      header { grid-template-columns:1fr; padding:24px 18px 20px; }
+      .headline { text-align:left; border-left:0; border-top:1px solid var(--rule); padding:14px 0 0; }
+      .toolbar { align-items:flex-start; }
+      .tabs { flex:1; }
+      button { flex:1; padding:11px 8px; font-size:10px; }
+      .full { display:none; }
+      iframe { height:calc(100vh - 58px); min-height:680px; }
+      footer { padding:16px 18px 22px; flex-direction:column; }
+      footer span:last-child { text-align:left; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <p class="eyebrow">Building for Good Hackathon · San Diego County · 2024</p>
+        <h1>PriceOut Collective</h1>
+        <p class="intro">One evidence-backed view of affordability: who falls below a basic-needs budget, where the pressure is greatest, and how far practical policy levers move the line.</p>
+      </div>
+      <div class="headline" aria-label="County headline finding">
+        <b>44.4%</b>
+        <span>520,257 households<br>below their living budget</span>
+      </div>
+    </header>
+
+    <section class="demo" aria-label="PriceOut interactive demo">
+      <div class="toolbar">
+        <div class="tabs" role="tablist" aria-label="Choose a demo view">
+          <button id="calculator-tab" role="tab" aria-selected="true" aria-controls="calculator-panel">Policy Calculator</button>
+          <button id="map-tab" role="tab" aria-selected="false" aria-controls="map-panel">County Map</button>
+        </div>
+        <a class="full" id="full-link" href="policy_calculator/prototype.html">Open this view full screen ↗</a>
+      </div>
+
+      <div class="panel active" id="calculator-panel" role="tabpanel" aria-labelledby="calculator-tab">
+        <iframe title="Interactive policy calculator" src="policy_calculator/prototype.html" loading="eager"></iframe>
+      </div>
+      <div class="panel" id="map-panel" role="tabpanel" aria-labelledby="map-tab" hidden>
+        <iframe title="Interactive San Diego County affordability map" data-src="map/output/sd_affordability_map.html" loading="lazy"></iframe>
+      </div>
+    </section>
+
+    <footer>
+      <span>Computed from 1,171,123 synthetic households. Results describe populations, never individuals.</span>
+      <span>Data Science Alliance · UC San Diego · Affordability track</span>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+      var views = {
+        calculator: { tab: "calculator-tab", panel: "calculator-panel", href: "policy_calculator/prototype.html" },
+        map: { tab: "map-tab", panel: "map-panel", href: "map/output/sd_affordability_map.html" }
+      };
+
+      function select(name, updateHash) {
+        Object.keys(views).forEach(function (key) {
+          var active = key === name;
+          var tab = document.getElementById(views[key].tab);
+          var panel = document.getElementById(views[key].panel);
+          tab.setAttribute("aria-selected", String(active));
+          panel.classList.toggle("active", active);
+          panel.hidden = !active;
+        });
+        var chosen = views[name];
+        var frame = document.querySelector("#" + chosen.panel + " iframe");
+        if (!frame.getAttribute("src")) frame.setAttribute("src", frame.getAttribute("data-src"));
+        document.getElementById("full-link").href = chosen.href;
+        if (updateHash && history.replaceState) history.replaceState(null, "", "#" + name);
+      }
+
+      Object.keys(views).forEach(function (name) {
+        document.getElementById(views[name].tab).addEventListener("click", function () { select(name, true); });
+      });
+      select(location.hash === "#map" ? "map" : "calculator", false);
+    })();
+  </script>
+</body>
+</html>
