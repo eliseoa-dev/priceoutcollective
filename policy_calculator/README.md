@@ -17,6 +17,20 @@ in `scenarios.py` for the exact math. **If the map's runway definition
 differs from what's documented there, tell us — we'll line them up before
 the joint rehearsal.**
 
+## The demo piece: `prototype.html`
+
+`prototype.html` is the thing to actually show. Open it in a browser — no
+build step, no server, no dependencies. Three sliders (wage, rent cap,
+voucher); every ZIP's runway recomputes live, before vs. after, with a
+table view and a methodology section built in.
+
+The data is embedded at the top of its `<script>` block in the same shape as
+`data/zips.csv`. When the real export lands, paste the rows in there (and
+into the CSV) and everything updates.
+
+The Python path below produces the same numbers as a static chart + CSV, for
+anyone who'd rather work in pandas.
+
 ## Run it
 
 ```bash

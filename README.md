@@ -23,11 +23,34 @@ build against the CSV.
 ## Repo layout
 
 ```
-data/                shared input data (zips.csv) + schema docs
+data/                shared input data + schema docs
+  raw/               organizers' source files, unmodified
+  ingest.py          raw source -> data/zips.csv
+  zips.csv           THE shared dataset — everything reads this
 map/                 the risk map (runway-by-ZIP)
 policy_calculator/   "what would help" scenario calculator
+  prototype.html     ← the demo. Open it in a browser, no setup.
+  sync_data.py       regenerates the prototype's embedded data from the CSV
 outputs/             generated charts/tables (gitignored except .gitkeep)
+docs/                team docs, incl. a plain-language git guide
 ```
+
+## Getting the data
+
+`data/zips.csv` currently holds **placeholder values, clearly labeled as such**
+in both the docs and the prototype UI. To bring in the organizers' real
+dataset, see [`data/raw/README.md`](data/raw/README.md) — download it into
+`data/raw/`, then:
+
+```bash
+cd data && python ingest.py --inspect raw/<file>.csv   # see what's in it
+cd data && python ingest.py raw/<file>.csv             # import it
+cd policy_calculator && python sync_data.py --real     # update the demo
+```
+
+New to git, or unsure how branches and PRs work here? Read
+[`docs/git-for-teammates.md`](docs/git-for-teammates.md) — five minutes, and
+it covers the three things that actually go wrong.
 
 ## Team workflow
 

@@ -104,10 +104,34 @@ class HousingVoucher(Scenario):
         }
 
 
+class AllThree(Scenario):
+    """All three levers at once — the 'what would it actually take' close."""
+
+    def __init__(self, pct_increase: float, cap: float, pct_of_gap: float):
+        self.wage = MinimumWageIncrease(pct_increase)
+        self.cap = RentStabilization(cap)
+        self.voucher = HousingVoucher(pct_of_gap)
+        super().__init__(
+            name="All three combined",
+            description="Wage bump, rent cap, and voucher applied together.",
+        )
+
+    def apply(self, row: dict) -> dict:
+        # Voucher lowers the burden first, then the wage bump divides what's left;
+        # the cap bends the growth trend independently.
+        after_voucher = self.voucher.apply(row)["burden_pct"]
+        return {
+            "burden_pct": after_voucher / (1 + self.wage.pct_increase),
+            "rent_growth": min(row["rent_growth_rate"], self.cap.cap),
+            "income_growth": row["income_growth_rate"],
+        }
+
+
 DEFAULT_SCENARIOS = [
     MinimumWageIncrease(0.08),
     RentStabilization(0.03),
     HousingVoucher(0.50),
+    AllThree(0.08, 0.03, 0.50),
 ]
 
 
