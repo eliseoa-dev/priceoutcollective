@@ -45,6 +45,9 @@
     .about li b { color:var(--ink); font-weight:600; }
     .about .rights { margin-top:22px; padding-top:14px; border-top:1px solid var(--rule); font-size:11px; }
     .about a { color:var(--red); text-underline-offset:3px; }
+    .about-extra { margin-top:4px; margin-bottom:14px; opacity:.72; }
+    .about-extra .label { margin:0 0 4px; font:500 10px/1.3 "DM Mono", monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+    .about-extra p:not(.label) { margin:0; font-size:12.5px; line-height:1.55; color:var(--muted); }
     footer { padding:18px 4px 0; color:var(--muted); font-size:11px; line-height:1.5; }
     .footer-top { display:flex; justify-content:space-between; gap:20px; }
     .footer-top span:last-child { text-align:right; }
@@ -111,6 +114,16 @@
             <li><b>Laine</b> — unified demo integration</li>
             <li><b>Saghar</b> — wage-distance analysis</li>
           </ul>
+          <div class="about-extra">
+            <p class="label">Additional Research</p>
+            <p>
+              Two further analyses from Kyaw Soe Lwin extend this work: a leakage-free predictive
+              risk model (F1 0.969, using only intake-available signals — income, household size,
+              and location) and a guaranteed-income lever analysis — the only modeled intervention
+              that reaches under-$50k households. Full write-up in
+              <a href="https://github.com/eliseoa-dev/priceoutcollective/blob/main/docs/ADDITIONAL_FINDINGS.md">Additional Findings</a>.
+            </p>
+          </div>
           <p>With review and feedback from <b>Richard</b>.</p>
           <p>Household Living Budget data modeled from the organizers' 2024 hackathon dataset — see <a href="policy_calculator/prototype.html#method">Method &amp; limits</a> for full methodology.</p>
           <p class="rights">© 2026 PriceOut Collective. Built during a hackathon for demonstration purposes. Not for reproduction or commercial use without permission.</p>
