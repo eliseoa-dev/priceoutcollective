@@ -30,18 +30,18 @@ varies.
 ## The demo
 
 Open **`index.html`** in a browser for the unified demo. One entry page switches between
-the policy calculator, the tract-level county map, the per-tract gap breakdown, and the
-wage-distance view; each can also open full screen. No build or application server is
-required (the two maps load basemap tiles and Leaflet from a CDN, so they need internet;
-the calculator and wage-distance view work fully offline).
+the policy calculator, the tract-level county map, and the wage-distance view; each can
+also open full screen. No build or application server is required (the county map loads
+basemap tiles and Leaflet from a CDN, so it needs internet; the calculator and
+wage-distance view work fully offline).
 
 The calculator includes three levers, an eligibility test on the rent subsidy, and a live
 cost figure — all 945 combinations precomputed exactly on all 1.17M households, so nothing
-is estimated in the browser. The county map answers *how many* households fall short, tract
-by tract; the gap-breakdown map answers the next question — click any of the 727 reliable
-tracts and see what that tract's own gap is actually made of (housing, transportation,
-healthcare, food, other essentials, childcare, broadband, tax), not estimated from the
-county average. The wage-distance view answers a different question again: not what one
+is estimated in the browser. The county map colours how many households fall short, tract
+by tract, and click any of the 727 reliable tracts to see what that tract's own gap is
+actually made of (housing, transportation, healthcare, food, other essentials, childcare,
+broadband, tax) — not estimated from the county average. The wage-distance view answers a
+different question again: not what one
 stated policy does countywide, but how large a raise it would take to close each
 below-budget household's own gap — a distribution, computed exactly, never a per-household
 claim.
@@ -93,10 +93,9 @@ policy_calculator/
   wage_distance_analysis.py  raw microdata -> data/wage_distance.json
   sync_wage_distance.py       regenerates that page's embedded data
 map/
-  output/sd_affordability_map.html   ← the county choropleth
-  gap_map.html                       ← the per-tract gap breakdown
-  build_gap_map_data.py              raw microdata + tract boundaries -> output/gap_map_data.json
-  sync_gap_map.py                     regenerates gap_map.html's embedded data
+  gap_map.html               ← the county map (click a tract for its own gap breakdown)
+  build_gap_map_data.py      raw microdata + tract boundaries -> output/gap_map_data.json
+  sync_gap_map.py             regenerates gap_map.html's embedded data
 docs/                        methodology, sources, findings, claims ledger
 ```
 

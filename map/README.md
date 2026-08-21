@@ -1,23 +1,27 @@
 # map/
 
 The tract-level risk map: where San Diego households fall below their
-Household Living Budget, shown on an interactive choropleth with eight
-hand-picked tracts called out by name and category ("already priced out,"
-"on the edge," "stable baseline"). Answers *who is at risk, and where*.
+Household Living Budget, shown on an interactive choropleth. Answers *who is
+at risk, and where* — and, on click, *what that tract's own gap is made of*.
 
-**Live demo:** https://priceout-collective.surge.sh
+## gap_map.html — the map in the unified demo
 
-## gap_map.html — click a tract to see what its own gap is made of
-
-A second, complementary map. `sd_affordability_map.html` answers *how many*
-households fall short, tract by tract; **`gap_map.html`** answers the next
-question — in any one tract, what does that gap actually consist of? Click
-any of the 727 reliable tracts and the side panel shows that tract's own
+**`gap_map.html`** is the "County Map" tab in the top-level `index.html`, and
+can also be opened directly. It colours all 727 reliable tracts by share of
+households below budget — same reading as any choropleth — and clicking a
+tract answers a second question in the same view: in this specific place,
+what does that gap actually consist of? The side panel shows that tract's own
 mean-monthly balance sheet (housing, transportation, healthcare, food, other
 essentials, childcare, broadband, tax) among its households below budget —
 same seven components and method as the calculator's county-wide figure,
-computed per tract instead. Open **`gap_map.html`** directly, or use the "Gap
-by Tract" tab in the top-level `index.html`.
+computed per tract instead.
+
+The original Folium-built choropleth, `output/sd_affordability_map.html`
+(live at https://priceout-collective.surge.sh), still exists and is still
+built the same way — it's just no longer the map linked from the unified
+demo's tabs. `gap_map.html` depends on one of its outputs,
+`output/featured_tracts_named.csv`, for neighbourhood names, so its pipeline
+(below) is still a real prerequisite, not legacy code.
 
 ```bash
 python src/build_boundaries.py   # only needed once, or if boundaries change

@@ -84,8 +84,7 @@
       <div class="toolbar">
         <div class="tabs" role="tablist" aria-label="Choose a demo view">
           <button id="calculator-tab" role="tab" aria-selected="true" aria-controls="calculator-panel">Policy Calculator</button>
-          <button id="map-tab" role="tab" aria-selected="false" aria-controls="map-panel">County Map</button>
-          <button id="gap-tab" role="tab" aria-selected="false" aria-controls="gap-panel">Gap by Tract</button>
+          <button id="gap-tab" role="tab" aria-selected="false" aria-controls="gap-panel">County Map</button>
           <button id="wage-tab" role="tab" aria-selected="false" aria-controls="wage-panel">Wage Distance</button>
           <button id="about-tab" role="tab" aria-selected="false" aria-controls="about-panel">Team &amp; Credits</button>
         </div>
@@ -95,11 +94,8 @@
       <div class="panel active" id="calculator-panel" role="tabpanel" aria-labelledby="calculator-tab">
         <iframe title="Interactive policy calculator" src="policy_calculator/prototype.html" loading="eager"></iframe>
       </div>
-      <div class="panel" id="map-panel" role="tabpanel" aria-labelledby="map-tab" hidden>
-        <iframe title="Interactive San Diego County affordability map" data-src="map/output/sd_affordability_map.html" loading="lazy"></iframe>
-      </div>
       <div class="panel" id="gap-panel" role="tabpanel" aria-labelledby="gap-tab" hidden>
-        <iframe title="Click a tract to see what its own budget gap is made of" data-src="map/gap_map.html" loading="lazy"></iframe>
+        <iframe title="Interactive San Diego County affordability map — click a tract to see what its own budget gap is made of" data-src="map/gap_map.html" loading="lazy"></iframe>
       </div>
       <div class="panel" id="wage-panel" role="tabpanel" aria-labelledby="wage-tab" hidden>
         <iframe title="Wage distance analysis: how large a raise would close each household's own gap" data-src="policy_calculator/wage_distance.html" loading="lazy"></iframe>
@@ -139,7 +135,6 @@
       "use strict";
       var views = {
         calculator: { tab: "calculator-tab", panel: "calculator-panel", href: "policy_calculator/prototype.html" },
-        map: { tab: "map-tab", panel: "map-panel", href: "map/output/sd_affordability_map.html" },
         gap: { tab: "gap-tab", panel: "gap-panel", href: "map/gap_map.html" },
         wage: { tab: "wage-tab", panel: "wage-panel", href: "policy_calculator/wage_distance.html" },
         about: { tab: "about-tab", panel: "about-panel" }
@@ -167,8 +162,8 @@
         document.getElementById(views[name].tab).addEventListener("click", function () { select(name, true); });
       });
       var initial =
-        location.hash === "#map" ? "map" :
         location.hash === "#gap" ? "gap" :
+        location.hash === "#map" ? "gap" :  // old hash, now the same "County Map" tab
         location.hash === "#wage" ? "wage" :
         location.hash === "#about" ? "about" :
         "calculator";
