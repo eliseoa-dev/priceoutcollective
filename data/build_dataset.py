@@ -122,7 +122,15 @@ def build_tracts(df: pd.DataFrame) -> pd.DataFrame:
               f"(flagged unreliable by the data dictionary)")
     out = out[out.households >= MIN_TRACT_HH].copy()
 
-    out = out.sort_values("vulnerable_rate", ascending=False).reset_index(drop=True)
+    # Sort deterministically. Several tracts share a vulnerable_rate, and an
+    # unstable sort orders ties differently between pandas versions and platforms.
+    # That is not cosmetic: there is a tie at the top-N boundary, so without a
+    # tiebreaker the set of featured tracts — what the demo actually shows — could
+    # differ depending on whose machine built the file.
+    out = out.sort_values(
+        ["vulnerable_rate", "geoid"], ascending=[False, True], kind="mergesort"
+    ).reset_index(drop=True)
+
     out["featured"] = False
     out.loc[out.head(N_FEATURED).index, "featured"] = True
     return out
