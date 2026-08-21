@@ -1,6 +1,6 @@
 """Build the standalone San Diego affordability choropleth map.
 
-- Base choropleth of all tracts, colored by coverage_pct (red=low, green=high)
+- Base choropleth of all tracts, colored by SHARE OF HOUSEHOLDS BELOW THEIR BUDGET
 - Bold outline overlay on featured tracts
 - DivIcon text labels on featured tracts (neighborhood name + coverage %)
 - Tooltips on featured tracts with vulnerability_rate, median_gap, coverage_pct
@@ -41,14 +41,14 @@ LABEL_CLUSTER_THRESHOLD_DEG = 0.025
 LABEL_OFFSET_DEG = 0.035
 
 CATEGORY_LABELS = {
-    "priced_out": "Already priced out",
-    "on_edge": "On the edge (near 100% coverage)",
-    "stable_baseline": "Stable baseline",
+    "most_affected": "Most households below their budget",
+    "at_the_line": "At the county rate (44.4%)",
+    "least_affected": "Fewest households below their budget",
 }
 CATEGORY_COLORS = {
-    "priced_out": "#8B0000",
-    "on_edge": "#B8860B",
-    "stable_baseline": "#00441b",
+    "most_affected": "#67000D",
+    "at_the_line": "#08519C",
+    "least_affected": "#238B45",
 }
 
 
@@ -64,28 +64,41 @@ def load_data():
 
 def build_choropleth(m, geojson, metrics):
     metrics_indexed = metrics.set_index("geo_id")
-    coverage_by_geoid = metrics_indexed["coverage_pct"].to_dict()
+    rate_by_geoid = metrics_indexed["vulnerability_rate"].to_dict()
 
-    # Clip the color scale so a handful of extreme outliers don't wash out
-    # the mid-range contrast that matters most for reading the map.
-    vmin, vmax = 40, 160
+    # Colour the same variable the headline reports: the share of a tract's
+    # households below their Household Living Budget.
+    #
+    # This replaces a red-to-green ramp over median(income / budget) with the
+    # neutral point at 100%. That scale put 65% of tracts in green while their
+    # median share of households in the red was 35.7%, and 154 green tracts were
+    # above 40% — a reader saw "four in nine in the red" over a mostly-green county
+    # and concluded one of the two was wrong.
+    #
+    # Sequential, single direction, no green. Green reads as "fine", and there is no
+    # tract in this county where nobody is short. Observed range is 14.0% to 87.4%.
+    vmin, vmax = 10, 90
     colormap = cm.LinearColormap(
-        colors=["#a50026", "#f46d43", "#fee08b", "#a6d96a", "#1a9850"],
+        colors=["#FFF5F0", "#FCBBA1", "#FB6A4A", "#CB181D", "#67000D"],
         vmin=vmin,
         vmax=vmax,
-        caption="Income coverage of the Household Living Budget (%)",
+        caption=("Share of households below their Household Living Budget (%)"
+                 "  \u2014  county-wide 44.4%"),
     )
 
     def style_function(feature):
         geoid = feature["properties"]["geoid"]
-        coverage = coverage_by_geoid.get(geoid)
-        if coverage is None:
-            return {"fillColor": "#cccccc", "color": "#999999", "weight": 0.3, "fillOpacity": 0.4}
+        rate = rate_by_geoid.get(geoid)
+        if rate is None:
+            # Not an absence of hardship: a tract excluded for holding under 100
+            # households, where the dictionary says the estimate is unreliable.
+            return {"fillColor": "#E8E8E8", "color": "#999999", "weight": 0.3,
+                    "fillOpacity": 0.4}
         return {
-            "fillColor": colormap(max(vmin, min(vmax, coverage))),
+            "fillColor": colormap(max(vmin, min(vmax, rate))),
             "color": "#666666",
             "weight": 0.3,
-            "fillOpacity": 0.75,
+            "fillOpacity": 0.8,
         }
 
     # Attach coverage/vulnerability/gap onto each feature's properties so
@@ -98,11 +111,13 @@ def build_choropleth(m, geojson, metrics):
 
     folium.GeoJson(
         geojson,
-        name="Coverage by tract",
+        name="Share of households below their budget",
         style_function=style_function,
         tooltip=folium.GeoJsonTooltip(
-            fields=["geoid", "tract_name", "coverage_pct", "vulnerability_rate"],
-            aliases=["Tract GEOID:", "Tract name:", "Coverage %:", "Vulnerability rate %:"],
+            fields=["geoid", "tract_name", "vulnerability_rate", "coverage_pct"],
+            aliases=["Tract GEOID:", "Tract name:",
+                     "Households below their budget (%):",
+                     "Median income as % of median budget:"],
             sticky=True,
         ),
     ).add_to(m)
@@ -147,7 +162,10 @@ def build_featured_overlay(m, geojson, featured):
         style_function=style_function,
         tooltip=folium.GeoJsonTooltip(
             fields=["geoid", "neighborhood_name", "tract_name", "category_label", "coverage_pct_fmt", "vulnerability_rate_fmt", "median_gap_fmt"],
-            aliases=["Tract GEOID:", "Neighborhood:", "Tract name:", "Category:", "Coverage:", "Vulnerability rate:", "Median gap:"],
+            aliases=["Tract GEOID:", "Area:", "Tract name:", "Category:",
+                     "Median income as % of median budget:",
+                     "Households below their budget:",
+                     "Median gap (negative = surplus):"],
             sticky=True,
         ),
     ).add_to(m)
@@ -204,7 +222,7 @@ def add_featured_labels(m, featured_geojson):
             feature = features[idx]
             props = feature["properties"]
             geoid = props["geoid"]
-            coverage_fmt = props["coverage_pct_fmt"]
+            coverage_fmt = props["vulnerability_rate_fmt"]
             label_name = props.get("neighborhood_name") or geoid[-4:]
             category = props.get("category_label", "")
             color = CATEGORY_COLORS.get(
@@ -301,7 +319,7 @@ def add_title(m):
         San Diego County Affordability Map — 2024
       </div>
       <div style="font-size:12px; color:#555; margin-top:2px;">
-        Household income as a percent of the Household Living Budget (HLB), by census tract &middot; PriceOut Collective
+        Share of households below their Household Living Budget, by census tract &middot; county-wide 44.4% &middot; PriceOut Collective
       </div>
     </div>
     """
@@ -316,16 +334,20 @@ def add_category_legend(m):
                 font-family: sans-serif; font-size:12px; color:#222;">
       <div style="font-weight:700; margin-bottom:6px;">Featured tracts</div>
       <div style="margin-bottom:3px;">
-        <span style="display:inline-block;width:14px;height:0;border-top:4px solid #8B0000;margin-right:6px;"></span>
-        Already priced out
+        <span style="display:inline-block;width:14px;height:0;border-top:4px solid #67000D;margin-right:6px;"></span>
+        Most households below their budget
       </div>
       <div style="margin-bottom:3px;">
-        <span style="display:inline-block;width:14px;height:0;border-top:4px solid #B8860B;margin-right:6px;"></span>
-        On the edge (near 100% coverage)
+        <span style="display:inline-block;width:14px;height:0;border-top:4px solid #08519C;margin-right:6px;"></span>
+        At the county rate (44.4%)
       </div>
-      <div>
-        <span style="display:inline-block;width:14px;height:0;border-top:4px solid #00441b;margin-right:6px;"></span>
-        Stable baseline
+      <div style="margin-bottom:6px;">
+        <span style="display:inline-block;width:14px;height:0;border-top:4px solid #238B45;margin-right:6px;"></span>
+        Fewest households below their budget
+      </div>
+      <div style="font-size:11px; color:#666; max-width:230px; line-height:1.35;">
+        Featured by the <b>number</b> of households affected, not the share.
+        Grey tracts hold under 100 households and are excluded as unreliable.
       </div>
     </div>
     """
