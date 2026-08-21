@@ -88,7 +88,7 @@ const VIEWS = {
       '<div class="tile"><div class="n">' + fmt(C.within10) + '</div><div class="l">households are <b>within 10%</b> of their budget line — one raise away</div></div>' +
       '<div class="tile"><div class="n acc">+' + fmt(t10.tipped) + '</div><div class="l">more households tip under their budget if rent rises <b>10%</b></div></div>' +
       '</div>' +
-      '<div class="person"><div class="who">A neighbor · 72 · San Diego · told to us this week</div>' +
+      '<div class="person"><div class="who">User research · one interview · 72 · San Diego</div>' +
       '<p>They were homeless. A caseworker got them housed. Social Security pays the rent; a subsidy covers the balance. That was the success — case closed.</p>' +
       '<p>Now the rent has gone up. The check has not. They are trying to find a cheaper place alone, on a fixed income, without a smartphone, without the caseworker. They are about to be homeless again.</p>' +
       '<p><em>“The project isn’t complete once they’re housed. It’s ongoing as long as they are on a subsidy.”</em></p></div>' +
@@ -215,7 +215,7 @@ const VIEWS = {
       '<p><b>Other data 2 — Downtown San Diego Partnership Clean &amp; Safe monthly unsheltered count (hackathon dataset, Homelessness track):</b> published neighborhood totals 2017–2025; core six neighborhoods summed, Outside Perimeter shown separately (joined April 2021).</p>' +
       '<p><b>Tract geometry:</b> Census TIGERweb 2020 tracts, San Diego County. <b>Social Security:</b> SSA average monthly benefit for retired workers, 2024, editable in the model.</p>' +
       '<p><b>EyePop.ai:</b> web SDK text recognition on a photographed rent-increase notice feeds the new rent into the model (The cliff → Snap the notice).</p>' +
-      '<p><b>Limits we know about:</b> the budget data cannot identify retirees (age bands stop at 19+), so the retiree lens is a one-person budget, not a senior-specific one. The storage capture is three weeks, not a year. The 72-year-old’s account is one person’s, reported to us directly; it is the reason, not the sample.</p></details>' +
+      '<p><b>Limits we know about:</b> the budget data cannot identify retirees (age bands stop at 19+), so the retiree lens is a one-person budget, not a senior-specific one. The storage capture is three weeks, not a year. The 72-year-old’s account comes from one user-research interview; it is the reason, not the sample.</p></details>' +
       '</section>';
   },
 };
