@@ -1,0 +1,1024 @@
+<title>Runway Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --bg:        #EFF3F6;
+  --panel:     #FFFFFF;
+  --panel-2:   #F7FAFB;
+  --ink:       #13202B;
+  --ink-2:     #4B5D6C;
+  --ink-3:     #7B8C9A;
+  --rule:      #D8E2E9;
+  --rule-soft: #E8EFF3;
+
+  --accent:    #3A6FB0;
+  --s-wage:    #3A6FB0;
+  --s-cap:     #0F8A6C;
+  --s-vouch:   #C05A2E;
+  --s-today:   #64798B;
+
+  --crit:      #9E2B20;
+  --crit-bg:   #F7E7E4;
+  --warn:      #8A5A11;
+  --warn-bg:   #F9EEDC;
+  --ok:        #1F6B4F;
+  --ok-bg:     #E2F0EA;
+
+  --shadow: 0 1px 2px rgba(19,32,43,.06), 0 4px 16px rgba(19,32,43,.05);
+
+  --label-w: 132px;
+  --gutter: 54px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #0E151B;
+    --panel:     #17212A;
+    --panel-2:   #1D2933;
+    --ink:       #E7EEF3;
+    --ink-2:     #A2B3C0;
+    --ink-3:     #6E8291;
+    --rule:      #2A3843;
+    --rule-soft: #212D37;
+
+    --crit:      #E8897C;
+    --crit-bg:   #3A211D;
+    --warn:      #E0B269;
+    --warn-bg:   #33281532;
+    --ok:        #79C9A6;
+    --ok-bg:     #17302680;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 20px rgba(0,0,0,.3);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E151B;
+  --panel:     #17212A;
+  --panel-2:   #1D2933;
+  --ink:       #E7EEF3;
+  --ink-2:     #A2B3C0;
+  --ink-3:     #6E8291;
+  --rule:      #2A3843;
+  --rule-soft: #212D37;
+
+  --crit:      #E8897C;
+  --crit-bg:   #3A211D;
+  --warn:      #E0B269;
+  --warn-bg:   #33281532;
+  --ok:        #79C9A6;
+  --ok-bg:     #17302680;
+
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 20px rgba(0,0,0,.3);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 24px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead { display: flex; flex-direction: column; gap: 12px; }
+
+.eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+h1 {
+  font-family: "Newsreader", Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  font-size: clamp(30px, 4.4vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h1 em { font-style: italic; color: var(--accent); }
+
+.standfirst {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(16px, 1.7vw, 19px);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 62ch;
+  margin: 0;
+}
+
+/* ---------- provenance banner ---------- */
+
+.provenance {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--warn-bg);
+  border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.provenance strong { color: var(--warn); font-weight: 600; }
+.provenance .mark {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--warn);
+  border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+  border-radius: 3px;
+  padding: 2px 6px;
+  flex: none;
+  margin-top: 1px;
+}
+
+/* ---------- panels ---------- */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.panel-title {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  margin: 0;
+}
+
+.panel-note { font-size: 13px; color: var(--ink-3); margin: 0; }
+
+/* ---------- levers ---------- */
+
+.levers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 4px;
+  padding: 4px;
+}
+
+.lever {
+  padding: 18px 18px 20px;
+  border-radius: 7px;
+  background: var(--panel-2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 3px solid var(--lever-hue);
+}
+
+.lever-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+
+.lever-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -.005em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lever-name .swatch {
+  width: 10px; height: 10px; border-radius: 2px;
+  background: var(--lever-hue);
+  flex: none;
+}
+
+.lever-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--lever-hue);
+  letter-spacing: -.02em;
+}
+
+.lever-desc { font-size: 12.5px; line-height: 1.45; color: var(--ink-3); margin: 0; min-height: 3.6em; }
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  margin: 0;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px; background: var(--rule);
+}
+input[type=range]::-moz-range-track {
+  height: 4px; border-radius: 2px; background: var(--rule);
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--lever-hue);
+  border: 3px solid var(--panel);
+  box-shadow: 0 0 0 1px var(--lever-hue);
+  margin-top: -7px;
+}
+input[type=range]::-moz-range-thumb {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--lever-hue);
+  border: 3px solid var(--panel);
+  box-shadow: 0 0 0 1px var(--lever-hue);
+}
+input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+
+.lever-scale {
+  display: flex; justify-content: space-between;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px; color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- stat row ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1px;
+  background: var(--rule-soft);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+}
+
+.stat { background: var(--panel); padding: 18px 20px; display: flex; flex-direction: column; gap: 3px; }
+
+.stat-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.stat-figure {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 38px; font-weight: 500; line-height: 1.05;
+  letter-spacing: -.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-delta {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px; font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; gap: 6px;
+}
+.stat-delta .tag {
+  border-radius: 3px; padding: 1px 5px; font-weight: 600; font-size: 11px;
+}
+.tag.good { background: var(--ok-bg); color: var(--ok); }
+.tag.flat { background: var(--rule-soft); color: var(--ink-3); }
+.stat-delta .cap { color: var(--ink-3); }
+
+/* ---------- chart ---------- */
+
+.chart-body { padding: 8px 20px 20px; overflow-x: auto; }
+
+.axis {
+  position: relative; height: 22px;
+  margin-left: var(--label-w); margin-right: var(--gutter); margin-bottom: 2px;
+  min-width: 320px;
+}
+.axis .tick {
+  position: absolute; top: 0; transform: translateX(-50%);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px; color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rows { display: flex; flex-direction: column; gap: 2px; min-width: 320px; }
+
+.zrow {
+  display: grid;
+  grid-template-columns: var(--label-w) 1fr;
+  align-items: center;
+  padding: 7px 0;
+  border-top: 1px solid var(--rule-soft);
+  position: relative;
+}
+
+.zlabel { display: flex; flex-direction: column; gap: 1px; padding-right: 14px; }
+.zlabel .z {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13.5px; font-weight: 600; letter-spacing: .01em;
+  font-variant-numeric: tabular-nums;
+}
+.zlabel .area { font-size: 11px; color: var(--ink-3); line-height: 1.3; }
+
+.bars { display: flex; flex-direction: column; gap: 2px; position: relative; padding-right: var(--gutter); }
+
+.grid { position: absolute; inset: 0 var(--gutter) 0 0; pointer-events: none; }
+.grid span {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: var(--rule-soft);
+}
+
+.bar-line { display: flex; align-items: center; gap: 8px; height: 13px; position: relative; }
+
+.bar-track { flex: 1; position: relative; height: 13px; }
+
+.bar {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  border-radius: 0 3px 3px 0;
+  min-width: 2px;
+  transition: width .28s cubic-bezier(.4,0,.2,1);
+}
+.bar.zero {
+  width: 3px !important;
+  border-radius: 0;
+  background: var(--crit) !important;
+}
+.bar.over::after {
+  content: "";
+  position: absolute; right: -1px; top: 0; bottom: 0; width: 6px;
+  background: repeating-linear-gradient(115deg, var(--panel) 0 2px, transparent 2px 4px);
+}
+
+.bar-val {
+  position: absolute;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px; font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  top: 50%; transform: translateY(-50%);
+  padding-left: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.zrow:hover { background: var(--panel-2); }
+
+/* ---------- legend ---------- */
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 6px 18px;
+  padding: 0 20px 16px;
+}
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-2); }
+.legend-item .chip { width: 12px; height: 12px; border-radius: 2px; flex: none; }
+
+/* ---------- controls ---------- */
+
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--panel-2);
+}
+.seg button {
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 6px 13px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.linkbtn {
+  font-family: inherit; font-size: 12.5px; font-weight: 500;
+  background: none; border: 0; padding: 0;
+  color: var(--accent); cursor: pointer; text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.linkbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+/* ---------- table ---------- */
+
+.tablewrap { overflow-x: auto; padding: 0 20px 20px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 640px; }
+th, td {
+  text-align: right; padding: 8px 10px;
+  border-bottom: 1px solid var(--rule-soft);
+  font-variant-numeric: tabular-nums;
+  font-family: "IBM Plex Mono", monospace;
+  white-space: nowrap;
+}
+th {
+  font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--ink-3); font-weight: 600;
+  border-bottom: 1px solid var(--rule);
+  position: sticky; top: 0; background: var(--panel);
+}
+th:first-child, td:first-child,
+th:nth-child(2), td:nth-child(2) { text-align: left; }
+th:nth-child(2), td:nth-child(2) { font-family: "IBM Plex Sans", sans-serif; }
+td.zip { font-weight: 600; }
+tbody tr:hover { background: var(--panel-2); }
+
+.pill {
+  display: inline-block; border-radius: 3px;
+  padding: 1px 6px; font-size: 10.5px; font-weight: 600;
+  letter-spacing: .03em;
+}
+.pill.crit { background: var(--crit-bg); color: var(--crit); }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.ok   { background: var(--ok-bg);   color: var(--ok); }
+
+/* ---------- tooltip ---------- */
+
+#tip {
+  position: fixed;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .12s;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 6px;
+  padding: 9px 11px;
+  font-size: 12px;
+  line-height: 1.45;
+  max-width: 260px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.28);
+}
+#tip .t-head {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600; font-size: 11px; letter-spacing: .05em;
+  margin-bottom: 3px;
+  display: flex; align-items: center; gap: 6px;
+}
+#tip .t-head .chip { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+#tip .t-num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+#tip .t-sub { opacity: .72; font-size: 11px; margin-top: 3px; }
+
+/* ---------- method ---------- */
+
+.method { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+.method p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-2); max-width: 72ch; }
+.method h3 {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-3); margin: 0; font-weight: 600;
+}
+.formula {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px;
+  background: var(--panel-2);
+  border: 1px solid var(--rule-soft);
+  border-radius: 6px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  color: var(--ink);
+  line-height: 1.7;
+}
+.method ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+.method li { margin-bottom: 5px; }
+.method code {
+  font-family: "IBM Plex Mono", monospace; font-size: 12px;
+  background: var(--panel-2); border-radius: 3px; padding: 1px 4px;
+}
+
+footer {
+  font-size: 12px; color: var(--ink-3); text-align: center;
+  border-top: 1px solid var(--rule); padding-top: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+@media (max-width: 620px) {
+  .zrow { grid-template-columns: 1fr; gap: 6px; }
+  .zlabel { flex-direction: row; align-items: baseline; gap: 8px; }
+  .axis { margin-left: 0; }
+}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Building for Good · Affordability track · Priceout Collective</div>
+    <h1>The map says who runs out of runway. <em>This says what buys it back.</em></h1>
+    <p class="standfirst">
+      Runway is the number of months a San&nbsp;Diego ZIP has before median rent crosses
+      half of median income. Pull the three levers below and every ZIP&rsquo;s runway
+      recomputes against the same formula the map uses.
+    </p>
+  </header>
+
+  <div class="provenance">
+    <span class="mark" id="prov-mark">PLACEHOLDER</span>
+    <div id="prov-text">
+      <strong>These numbers are illustrative, not measured.</strong>
+      The rows below are plausible stand-ins built to the agreed
+      <code>data/zips.csv</code> schema so the calculator runs end-to-end today.
+      Swap in the real ACS export &mdash; same column names &mdash; and every figure
+      on this page updates with no other change.
+    </div>
+  </div>
+
+  <!-- ================= LEVERS ================= -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Policy levers</h2>
+      <p class="panel-note">Each lever is modeled independently &mdash; the combined figure assumes all three at once.</p>
+    </div>
+    <div class="levers">
+      <div class="lever" style="--lever-hue: var(--s-wage)">
+        <div class="lever-top">
+          <span class="lever-name"><span class="swatch"></span>Minimum wage increase</span>
+          <span class="lever-value" id="wage-out">+8%</span>
+        </div>
+        <p class="lever-desc">A one-time lift to household income. Rent and income growth trends carry on unchanged afterward.</p>
+        <input type="range" id="wage" min="0" max="40" step="1" value="8" aria-label="Minimum wage increase, percent">
+        <div class="lever-scale"><span>+0%</span><span>+40%</span></div>
+      </div>
+
+      <div class="lever" style="--lever-hue: var(--s-cap)">
+        <div class="lever-top">
+          <span class="lever-name"><span class="swatch"></span>Rent stabilization cap</span>
+          <span class="lever-value" id="cap-out">3%/yr</span>
+        </div>
+        <p class="lever-desc">Ceiling on annual rent growth. Only bites in ZIPs whose current trend already runs above the cap.</p>
+        <input type="range" id="cap" min="0" max="8" step="0.5" value="3" aria-label="Rent stabilization cap, percent per year">
+        <div class="lever-scale"><span>0%/yr</span><span>8%/yr</span></div>
+      </div>
+
+      <div class="lever" style="--lever-hue: var(--s-vouch)">
+        <div class="lever-top">
+          <span class="lever-name"><span class="swatch"></span>Housing voucher</span>
+          <span class="lever-value" id="vouch-out">50%</span>
+        </div>
+        <p class="lever-desc">Covers this share of the gap between what a household pays now and the 30% affordability line.</p>
+        <input type="range" id="vouch" min="0" max="100" step="5" value="50" aria-label="Housing voucher, percent of affordability gap covered">
+        <div class="lever-scale"><span>0%</span><span>100%</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STATS ================= -->
+  <section class="stats" id="stats"></section>
+
+  <!-- ================= CHART ================= -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Runway today vs. under each lever</h2>
+      <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap">
+        <div class="seg" role="group" aria-label="Which ZIPs to show">
+          <button type="button" id="btn-featured" aria-pressed="true">Featured ZIPs</button>
+          <button type="button" id="btn-all" aria-pressed="false">All ZIPs</button>
+        </div>
+        <button type="button" class="linkbtn" id="btn-view">Show as table</button>
+      </div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <div id="chart-view">
+      <div class="chart-body">
+        <div class="axis" id="axis"></div>
+        <div class="rows" id="rows"></div>
+      </div>
+    </div>
+
+    <div id="table-view" hidden>
+      <div class="tablewrap">
+        <table id="table"></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= METHOD ================= -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">How the runway is computed</h2>
+      <p class="panel-note">Must match the map's definition &mdash; confirm before the joint rehearsal.</p>
+    </div>
+    <div class="method">
+      <div>
+        <h3>Model</h3>
+        <div class="formula">
+burden(t) = burden&#8320; &times; [ (1 + rent_growth) / (1 + income_growth) ] <sup>t / 12</sup><br>
+runway    = smallest t where burden(t) &ge; 0.50
+        </div>
+      </div>
+      <div>
+        <h3>How each lever enters</h3>
+        <ul>
+          <li><strong>Minimum wage</strong> divides today&rsquo;s burden by <code>(1 + increase)</code>. Growth rates untouched &mdash; a level shift, not a trend change.</li>
+          <li><strong>Rent stabilization</strong> replaces <code>rent_growth</code> with <code>min(rent_growth, cap)</code>. It bends the curve rather than shifting it, so it does nothing for a ZIP already past 50%.</li>
+          <li><strong>Housing voucher</strong> subtracts a share of <code>max(burden &minus; 0.30, 0)</code> from today&rsquo;s burden &mdash; the only lever that can pull an already-burdened ZIP back below the line.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Reading the chart</h3>
+        <p>
+          A ZIP already at or past 50% burden has zero runway and shows a red tick at the axis origin.
+          Bars are clipped at 120 months; a hatched end means the ZIP does not cross 50% within ten years
+          under that lever. Where income growth matches or beats rent growth, burden never crosses at all &mdash;
+          those read as <span style="font-family:'IBM Plex Mono',monospace">10 yr+</span>.
+        </p>
+      </div>
+      <div>
+        <h3>Known gaps</h3>
+        <p>
+          Growth rates are held constant, so this is a trend projection and not a forecast &mdash; no supply
+          response, no induced rent increases from voucher uptake, no migration. The voucher lever in particular
+          models the household&rsquo;s out-of-pocket burden, not the market rent, so it understates any
+          landlord-side price effect. Worth saying out loud to judges rather than letting them find it.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Priceout Collective &middot; Building for Good Hackathon &middot; Data Science Alliance at UC San Diego
+  </footer>
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // DATA — placeholder rows matching the agreed data/zips.csv schema.
+  // Replace wholesale with the real export; nothing below needs to change.
+  // ---------------------------------------------------------------
+  var ZIPS = [
+    { zip:"92113", area:"Logan Heights",      income:45000,  rent:1900, rentG:.055, incG:.020, featured:true  },
+    { zip:"92173", area:"San Ysidro",         income:44000,  rent:1850, rentG:.055, incG:.020, featured:true  },
+    { zip:"92105", area:"City Heights",       income:47000,  rent:1950, rentG:.060, incG:.020, featured:true  },
+    { zip:"92102", area:"Golden Hill",        income:52000,  rent:2100, rentG:.065, incG:.025, featured:true  },
+    { zip:"92154", area:"Otay Mesa",          income:53000,  rent:2050, rentG:.060, incG:.025, featured:true  },
+    { zip:"92115", area:"Rolando",            income:61000,  rent:2300, rentG:.065, incG:.030, featured:true  },
+    { zip:"92114", area:"Encanto",            income:58000,  rent:2200, rentG:.060, incG:.030, featured:true  },
+    { zip:"92101", area:"Downtown",           income:68000,  rent:2450, rentG:.070, incG:.030, featured:true  },
+    { zip:"92104", area:"North Park",         income:72000,  rent:2400, rentG:.062, incG:.031, featured:false },
+    { zip:"92116", area:"Normal Heights",     income:69000,  rent:2350, rentG:.061, incG:.030, featured:false },
+    { zip:"92111", area:"Linda Vista",        income:76000,  rent:2450, rentG:.055, incG:.032, featured:false },
+    { zip:"92126", area:"Mira Mesa",          income:84000,  rent:2600, rentG:.050, incG:.035, featured:false },
+    { zip:"92117", area:"Clairemont",         income:81000,  rent:2550, rentG:.052, incG:.034, featured:false },
+    { zip:"92109", area:"Pacific Beach",      income:95000,  rent:3100, rentG:.055, incG:.036, featured:false },
+    { zip:"92037", area:"La Jolla",           income:145000, rent:3800, rentG:.045, incG:.040, featured:false }
+  ];
+
+  var CRISIS = 0.50;      // runway target: burden crosses half of income
+  var AFFORD = 0.30;      // HUD cost-burden line
+  var AXIS_MAX = 120;     // months shown on the axis (10 years)
+
+  ZIPS.forEach(function (z) { z.burden = (z.rent * 12) / z.income; });
+
+  // ---------------------------------------------------------------
+  // MODEL
+  // ---------------------------------------------------------------
+  function runway(burden, rentG, incG) {
+    if (burden >= CRISIS) return 0;
+    var ratio = (1 + rentG) / (1 + incG);
+    if (ratio <= 1) return Infinity;
+    return 12 * Math.log(CRISIS / burden) / Math.log(ratio);
+  }
+
+  var SERIES = [
+    { key:"today",  label:"Runway today",        hue:"var(--s-today)",
+      apply:function (z)    { return { b:z.burden, r:z.rentG, i:z.incG }; } },
+    { key:"wage",   label:"Minimum wage",        hue:"var(--s-wage)",
+      apply:function (z, L) { return { b:z.burden / (1 + L.wage), r:z.rentG, i:z.incG }; } },
+    { key:"cap",    label:"Rent stabilization",  hue:"var(--s-cap)",
+      apply:function (z, L) { return { b:z.burden, r:Math.min(z.rentG, L.cap), i:z.incG }; } },
+    { key:"vouch",  label:"Housing voucher",     hue:"var(--s-vouch)",
+      apply:function (z, L) { return { b:z.burden - L.vouch * Math.max(z.burden - AFFORD, 0), r:z.rentG, i:z.incG }; } }
+  ];
+
+  function allThree(z, L) {
+    return {
+      b: (z.burden - L.vouch * Math.max(z.burden - AFFORD, 0)) / (1 + L.wage),
+      r: Math.min(z.rentG, L.cap),
+      i: z.incG
+    };
+  }
+
+  function compute(z, L) {
+    var out = {};
+    SERIES.forEach(function (s) {
+      var a = s.apply(z, L);
+      out[s.key] = runway(a.b, a.r, a.i);
+    });
+    var c = allThree(z, L);
+    out.combined = runway(c.b, c.r, c.i);
+    return out;
+  }
+
+  // ---------------------------------------------------------------
+  // FORMATTING
+  // ---------------------------------------------------------------
+  function fmtMonths(m) {
+    if (m === Infinity || m > AXIS_MAX) return "10 yr+";
+    if (m === 0) return "0";
+    if (m < 10) return m.toFixed(1);
+    return String(Math.round(m));
+  }
+
+  function fmtYears(m) {
+    if (m === Infinity || m > AXIS_MAX) return "beyond 10 years";
+    if (m < 24) return Math.round(m) + " months";
+    return (m / 12).toFixed(1) + " years";
+  }
+
+  function statusOf(m) {
+    if (m === 0) return { cls:"crit", text:"PAST 50%" };
+    if (m < 24)  return { cls:"warn", text:"UNDER 2 YR" };
+    return { cls:"ok", text:"HAS RUNWAY" };
+  }
+
+  // ---------------------------------------------------------------
+  // STATE
+  // ---------------------------------------------------------------
+  var state = { featuredOnly: true, view: "chart" };
+
+  function levers() {
+    return {
+      wage:  Number(document.getElementById("wage").value) / 100,
+      cap:   Number(document.getElementById("cap").value) / 100,
+      vouch: Number(document.getElementById("vouch").value) / 100
+    };
+  }
+
+  function visibleZips() {
+    return state.featuredOnly ? ZIPS.filter(function (z) { return z.featured; }) : ZIPS.slice();
+  }
+
+  // ---------------------------------------------------------------
+  // RENDER — legend
+  // ---------------------------------------------------------------
+  function renderLegend() {
+    document.getElementById("legend").innerHTML = SERIES.map(function (s) {
+      return '<span class="legend-item"><span class="chip" style="background:' + s.hue + '"></span>' + s.label + "</span>";
+    }).join("");
+  }
+
+  // ---------------------------------------------------------------
+  // RENDER — stat row
+  // ---------------------------------------------------------------
+  function renderStats(rows, L) {
+    var pastNow = rows.filter(function (r) { return r.v.today === 0; }).length;
+    var pastAll = rows.filter(function (r) { return r.v.combined === 0; }).length;
+
+    var tightNow = rows.filter(function (r) { return r.v.today < 24; }).length;
+    var tightAll = rows.filter(function (r) { return r.v.combined < 24; }).length;
+
+    var medNow = median(rows.map(function (r) { return Math.min(r.v.today, AXIS_MAX); }));
+    var medAll = median(rows.map(function (r) { return Math.min(r.v.combined, AXIS_MAX); }));
+    var gained = medAll - medNow;
+
+    var cards = [
+      {
+        label: "ZIPs already past 50%",
+        figure: pastNow + " of " + rows.length,
+        delta: pastAll < pastNow
+          ? ['<span class="tag good">' + (pastNow - pastAll) + " pulled back</span>", "with all three levers"]
+          : ['<span class="tag flat">no change</span>', "vouchers are the only lever that reaches these"]
+      },
+      {
+        label: "ZIPs with under 2 years",
+        figure: tightNow + " of " + rows.length,
+        delta: tightAll < tightNow
+          ? ['<span class="tag good">' + (tightNow - tightAll) + " cleared</span>", "with all three levers"]
+          : ['<span class="tag flat">no change</span>', "levers set too low to clear any"]
+      },
+      {
+        label: "Median runway",
+        figure: medNow >= AXIS_MAX ? "10 yr+" : fmtMonths(medNow) + " mo",
+        delta: gained > 0.5
+          ? ['<span class="tag good">+' + Math.round(gained) + " mo</span>",
+             "&rarr; " + (medAll >= AXIS_MAX ? "10 yr+" : fmtMonths(medAll) + " mo") + " combined"]
+          : ['<span class="tag flat">+0 mo</span>', "no levers pulled yet"]
+      }
+    ];
+
+    document.getElementById("stats").innerHTML = cards.map(function (c) {
+      return '<div class="stat">' +
+        '<span class="stat-label">' + c.label + "</span>" +
+        '<span class="stat-figure">' + c.figure + "</span>" +
+        '<span class="stat-delta">' + c.delta[0] + '<span class="cap">' + c.delta[1] + "</span></span>" +
+      "</div>";
+    }).join("");
+  }
+
+  function median(a) {
+    var s = a.slice().sort(function (x, y) { return x - y; });
+    var n = s.length;
+    if (!n) return 0;
+    return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
+  }
+
+  // ---------------------------------------------------------------
+  // RENDER — chart
+  // ---------------------------------------------------------------
+  var TICKS = [0, 24, 48, 72, 96, 120];
+
+  function renderAxis() {
+    document.getElementById("axis").innerHTML = TICKS.map(function (t) {
+      var pct = (t / AXIS_MAX) * 100;
+      var lbl = t === 0 ? "0" : (t === AXIS_MAX ? "10 yr+" : t + " mo");
+      return '<span class="tick" style="left:' + pct + '%">' + lbl + "</span>";
+    }).join("");
+  }
+
+  function renderChart(rows) {
+    var gridHTML = TICKS.map(function (t) {
+      return '<span style="left:' + (t / AXIS_MAX) * 100 + '%"></span>';
+    }).join("");
+
+    document.getElementById("rows").innerHTML = rows.map(function (r) {
+      var bars = SERIES.map(function (s) {
+        var m = r.v[s.key];
+        var over = (m === Infinity || m > AXIS_MAX);
+        var w = over ? 100 : (m / AXIS_MAX) * 100;
+        var cls = "bar" + (m === 0 ? " zero" : "") + (over ? " over" : "");
+        var labelLeft = over ? 100 : w;
+
+        return '<div class="bar-line" data-zip="' + r.z.zip + '" data-key="' + s.key + '">' +
+          '<div class="bar-track">' +
+            '<div class="' + cls + '" style="width:' + w + "%; background:" + s.hue + '"></div>' +
+            '<span class="bar-val" style="left:' + labelLeft + '%">' + fmtMonths(m) + "</span>" +
+          "</div>" +
+        "</div>";
+      }).join("");
+
+      return '<div class="zrow">' +
+        '<div class="zlabel"><span class="z">' + r.z.zip + '</span><span class="area">' + r.z.area + "</span></div>" +
+        '<div class="bars"><div class="grid">' + gridHTML + "</div>" + bars + "</div>" +
+      "</div>";
+    }).join("");
+  }
+
+  // ---------------------------------------------------------------
+  // RENDER — table
+  // ---------------------------------------------------------------
+  function renderTable(rows) {
+    var head = "<thead><tr><th>ZIP</th><th>Area</th><th>Burden</th><th>Today</th>" +
+      SERIES.slice(1).map(function (s) { return "<th>" + s.label + "</th>"; }).join("") +
+      "<th>All three</th><th>Status today</th></tr></thead>";
+
+    var body = "<tbody>" + rows.map(function (r) {
+      var st = statusOf(r.v.today);
+      return "<tr>" +
+        '<td class="zip">' + r.z.zip + "</td>" +
+        "<td>" + r.z.area + "</td>" +
+        "<td>" + (r.z.burden * 100).toFixed(1) + "%</td>" +
+        "<td>" + fmtMonths(r.v.today) + "</td>" +
+        SERIES.slice(1).map(function (s) { return "<td>" + fmtMonths(r.v[s.key]) + "</td>"; }).join("") +
+        "<td>" + fmtMonths(r.v.combined) + "</td>" +
+        '<td><span class="pill ' + st.cls + '">' + st.text + "</span></td>" +
+      "</tr>";
+    }).join("") + "</tbody>";
+
+    document.getElementById("table").innerHTML = head + body;
+  }
+
+  // ---------------------------------------------------------------
+  // TOOLTIP
+  // ---------------------------------------------------------------
+  var tip = document.getElementById("tip");
+  var tipRow = null;
+
+  document.getElementById("rows").addEventListener("mousemove", function (e) {
+    var line = e.target.closest(".bar-line");
+    if (!line) { hideTip(); return; }
+
+    var key = line.getAttribute("data-key");
+    var zip = line.getAttribute("data-zip");
+
+    if (tipRow !== line) {
+      tipRow = line;
+      var L = levers();
+      var z = ZIPS.find(function (x) { return x.zip === zip; });
+      var s = SERIES.find(function (x) { return x.key === key; });
+      var v = compute(z, L);
+      var m = v[key];
+      var base = v.today;
+      var gain = (m === Infinity ? AXIS_MAX : m) - (base === Infinity ? AXIS_MAX : base);
+
+      var sub;
+      if (key === "today") {
+        sub = "Burden today: " + (z.burden * 100).toFixed(1) + "% of income";
+      } else if (gain > 0.5) {
+        sub = "Buys back " + Math.round(gain) + " months vs. today";
+      } else if (m === 0 && base === 0) {
+        sub = "Already past 50% &mdash; this lever does not reach it";
+      } else {
+        sub = "No change at this setting";
+      }
+
+      tip.innerHTML =
+        '<div class="t-head"><span class="chip" style="background:' + s.hue + '"></span>' + zip + " &middot; " + s.label + "</div>" +
+        '<div class="t-num">' + fmtYears(m) + " of runway</div>" +
+        '<div class="t-sub">' + sub + "</div>";
+      tip.style.opacity = "1";
+    }
+
+    var x = e.clientX + 14;
+    var y = e.clientY + 16;
+    if (x + 270 > window.innerWidth) x = e.clientX - 274;
+    if (y + 90 > window.innerHeight) y = e.clientY - 96;
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+  });
+
+  document.getElementById("rows").addEventListener("mouseleave", hideTip);
+
+  function hideTip() { tip.style.opacity = "0"; tipRow = null; }
+
+  // ---------------------------------------------------------------
+  // WIRING
+  // ---------------------------------------------------------------
+  function render() {
+    var L = levers();
+
+    document.getElementById("wage-out").textContent  = "+" + Math.round(L.wage * 100) + "%";
+    document.getElementById("cap-out").textContent   = (L.cap * 100).toFixed(L.cap * 100 % 1 ? 1 : 0) + "%/yr";
+    document.getElementById("vouch-out").textContent = Math.round(L.vouch * 100) + "%";
+
+    var rows = visibleZips()
+      .map(function (z) { return { z:z, v:compute(z, L) }; })
+      .sort(function (a, b) {
+        var av = a.v.today === Infinity ? 1e9 : a.v.today;
+        var bv = b.v.today === Infinity ? 1e9 : b.v.today;
+        return av - bv;
+      });
+
+    renderStats(rows, L);
+    renderChart(rows);
+    renderTable(rows);
+  }
+
+  ["wage", "cap", "vouch"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", render);
+  });
+
+  var bF = document.getElementById("btn-featured");
+  var bA = document.getElementById("btn-all");
+
+  bF.addEventListener("click", function () {
+    state.featuredOnly = true;
+    bF.setAttribute("aria-pressed", "true");
+    bA.setAttribute("aria-pressed", "false");
+    render();
+  });
+  bA.addEventListener("click", function () {
+    state.featuredOnly = false;
+    bF.setAttribute("aria-pressed", "false");
+    bA.setAttribute("aria-pressed", "true");
+    render();
+  });
+
+  document.getElementById("btn-view").addEventListener("click", function () {
+    state.view = state.view === "chart" ? "table" : "chart";
+    var chart = state.view === "chart";
+    document.getElementById("chart-view").hidden = !chart;
+    document.getElementById("table-view").hidden = chart;
+    this.textContent = chart ? "Show as table" : "Show as chart";
+  });
+
+  renderLegend();
+  renderAxis();
+  render();
+})();
+</script>
