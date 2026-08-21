@@ -86,22 +86,22 @@
     <section class="demo" aria-label="PriceOut interactive demo">
       <div class="toolbar">
         <div class="tabs" role="tablist" aria-label="Choose a demo view">
-          <button id="calculator-tab" role="tab" aria-selected="true" aria-controls="calculator-panel">Policy Calculator</button>
-          <button id="gap-tab" role="tab" aria-selected="false" aria-controls="gap-panel">County Map</button>
           <button id="wage-tab" role="tab" aria-selected="false" aria-controls="wage-panel">Wage Distance</button>
+          <button id="calculator-tab" role="tab" aria-selected="false" aria-controls="calculator-panel">Policy Calculator</button>
+          <button id="gap-tab" role="tab" aria-selected="true" aria-controls="gap-panel">County Map</button>
           <button id="about-tab" role="tab" aria-selected="false" aria-controls="about-panel">Team &amp; Credits</button>
         </div>
         <a class="full" id="full-link" href="policy_calculator/prototype.html">Open this view full screen ↗</a>
       </div>
 
-      <div class="panel active" id="calculator-panel" role="tabpanel" aria-labelledby="calculator-tab">
-        <iframe title="Interactive policy calculator" src="policy_calculator/prototype.html" loading="eager"></iframe>
-      </div>
-      <div class="panel" id="gap-panel" role="tabpanel" aria-labelledby="gap-tab" hidden>
-        <iframe title="Interactive San Diego County affordability map — click a tract to see what its own budget gap is made of" data-src="map/gap_map.html" loading="lazy"></iframe>
-      </div>
       <div class="panel" id="wage-panel" role="tabpanel" aria-labelledby="wage-tab" hidden>
         <iframe title="Wage distance analysis: how large a raise would close each household's own gap" data-src="policy_calculator/wage_distance.html" loading="lazy"></iframe>
+      </div>
+      <div class="panel" id="calculator-panel" role="tabpanel" aria-labelledby="calculator-tab" hidden>
+        <iframe title="Interactive policy calculator" data-src="policy_calculator/prototype.html" loading="lazy"></iframe>
+      </div>
+      <div class="panel active" id="gap-panel" role="tabpanel" aria-labelledby="gap-tab">
+        <iframe title="Interactive San Diego County affordability map — click a tract to see what its own budget gap is made of" src="map/gap_map.html" loading="eager"></iframe>
       </div>
       <div class="panel" id="about-panel" role="tabpanel" aria-labelledby="about-tab" hidden>
         <div class="about">
@@ -147,9 +147,9 @@
     (function () {
       "use strict";
       var views = {
+        wage: { tab: "wage-tab", panel: "wage-panel", href: "policy_calculator/wage_distance.html" },
         calculator: { tab: "calculator-tab", panel: "calculator-panel", href: "policy_calculator/prototype.html" },
         gap: { tab: "gap-tab", panel: "gap-panel", href: "map/gap_map.html" },
-        wage: { tab: "wage-tab", panel: "wage-panel", href: "policy_calculator/wage_distance.html" },
         about: { tab: "about-tab", panel: "about-panel" }
       };
 
@@ -178,8 +178,9 @@
         location.hash === "#gap" ? "gap" :
         location.hash === "#map" ? "gap" :  // old hash, now the same "County Map" tab
         location.hash === "#wage" ? "wage" :
+        location.hash === "#calculator" ? "calculator" :
         location.hash === "#about" ? "about" :
-        "calculator";
+        "gap";
       select(initial, false);
     })();
   </script>
