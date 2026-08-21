@@ -32,7 +32,8 @@ BLOCK_RE = re.compile(
 REQUIRED_KEYS = {
     "population", "wageSteps", "capSteps", "careSteps", "eligSteps",
     "county", "countyKids", "tracts", "tractRates", "budget",
-    "rentSubsidyCostMillions",
+    "countyCounts", "rentSubsidyCostMillions", "publicCostM", "wageCostM",
+    "remainingMedianIncome", "housingOnly",
 }
 
 # The sliders index the step arrays directly, so each input's max attribute must be
@@ -59,7 +60,9 @@ def load_grid() -> dict:
 
     expected = (len(grid["wageSteps"]) * len(grid["capSteps"])
                 * len(grid["careSteps"]) * len(grid["eligSteps"]))
-    for key in ("county", "countyKids", "tractRates", "rentSubsidyCostMillions"):
+    for key in ("county", "countyCounts", "countyKids", "tractRates",
+                "rentSubsidyCostMillions", "publicCostM", "wageCostM",
+                "remainingMedianIncome"):
         if len(grid[key]) != expected:
             sys.exit(
                 f"error: grid.json '{key}' has {len(grid[key])} entries, "
@@ -68,6 +71,13 @@ def load_grid() -> dict:
     for row in grid["tractRates"]:
         if len(row) != len(grid["tracts"]):
             sys.exit("error: a tractRates row does not match the number of tracts")
+
+    if abs(grid["countyCounts"][0] - grid["vulnerableCount"]) > 5:
+        sys.exit("error: baseline countyCounts exceeds the documented rounding tolerance")
+    if any(value < 0 for key in ("publicCostM", "wageCostM") for value in grid[key]):
+        sys.exit("error: policy-cost arrays contain a negative value")
+    if grid["housingOnly"]["inRed"] != grid["vulnerableCount"]:
+        sys.exit("error: housingOnly baseline does not match vulnerableCount")
 
     # The balance sheet is rendered as a column a judge can add up. Refuse to ship
     # a grid whose ledger does not reconcile.
