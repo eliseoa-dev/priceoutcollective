@@ -64,6 +64,7 @@ RAW = HERE / "raw" / "san_diego_ca_hlb_hackathon_2024.csv.gz"
 PUMA_NAMES = HERE / "puma_names.csv"
 TRACTS_OUT = HERE / "tracts.csv"
 GRID_OUT = HERE / "grid.json"
+MAP_FEATURED = HERE.parent / "map" / "output" / "featured_tracts_named.csv"
 
 MIN_TRACT_HH = 100          # the dictionary flags 5 tracts below this as unreliable
 OTHER_RATE = 0.20           # other_cost_month is defined as 20% of (food + housing)
@@ -185,6 +186,14 @@ class Model:
         income = self.income * (1 + wage_pct / 100.0)
         paid = self._housing(income, cap_pct, elig_pct)
         return float(np.sum(np.maximum(self.housing - paid, 0.0)) * 12.0)
+
+    def policy_costs(self, wage_pct: float, cap_pct: float, care_pct: float,
+                     elig_pct: float) -> tuple[float, float]:
+        """Return annual (public outlay, additional employer wages), in dollars."""
+        public = self.subsidy_cost(wage_pct, cap_pct, elig_pct)
+        public += float(np.sum(self.childcare * (care_pct / 100.0)) * 12.0)
+        wages = float(np.sum(self.income * (wage_pct / 100.0)))
+        return public, wages
 
 
 def build_tracts(df: pd.DataFrame) -> pd.DataFrame:
@@ -336,7 +345,18 @@ def build_grid(df: pd.DataFrame, tracts: pd.DataFrame) -> dict:
     """Exact rates at every lever combination, county-wide and per featured tract."""
     model = Model(df)
 
-    featured = tracts[tracts.featured].geoid.tolist()
+    featured_meta = None
+    if MAP_FEATURED.exists():
+        featured_meta = pd.read_csv(MAP_FEATURED, dtype={"geoid": str, "puma": str})
+        required = {"geoid", "neighborhood_name", "category"}
+        if not required.issubset(featured_meta.columns):
+            raise SystemExit(f"error: {MAP_FEATURED} is missing {sorted(required - set(featured_meta.columns))}")
+        featured = featured_meta.geoid.tolist()
+        missing = set(featured) - set(tracts.geoid)
+        if missing:
+            raise SystemExit(f"error: map featured tract(s) missing from data: {sorted(missing)}")
+    else:
+        featured = tracts[tracts.featured].geoid.tolist()
     lookup = {g: i for i, g in enumerate(featured)}
     codes = df.geoid.map(lookup).to_numpy()
     in_featured = ~pd.isna(codes)
@@ -346,7 +366,8 @@ def build_grid(df: pd.DataFrame, tracts: pd.DataFrame) -> dict:
     kids = model.kids
     n_kids = int(kids.sum())
 
-    county, county_kids, per_tract, cost = [], [], [], []
+    county, county_counts, county_kids, per_tract = [], [], [], []
+    rent_cost, public_cost, wage_cost, remaining_income = [], [], [], []
     total = len(WAGE_STEPS) * len(CAP_STEPS) * len(CARE_STEPS) * len(ELIG_STEPS)
     done = 0
 
@@ -355,13 +376,19 @@ def build_grid(df: pd.DataFrame, tracts: pd.DataFrame) -> dict:
             for k in CARE_STEPS:
                 for e in ELIG_STEPS:
                     hit = model.hit(w, c, k, e)
+                    hit_count = int(hit.sum())
                     county.append(round(float(hit.mean()) * 1000000))
+                    county_counts.append(hit_count)
                     county_kids.append(round(float(hit[kids].sum()) / n_kids * 1000000))
                     sums = np.bincount(f_codes, weights=hit[in_featured].astype(float),
                                        minlength=len(featured))
                     per_tract.append([round(v) for v in (sums / f_counts * 1000000)])
                     # Annual public cost of the rent lever, in millions.
-                    cost.append(round(model.subsidy_cost(w, c, e) / 1e6))
+                    rent_cost.append(round(model.subsidy_cost(w, c, e) / 1e6))
+                    public, wages = model.policy_costs(w, c, k, e)
+                    public_cost.append(round(public / 1e6))
+                    wage_cost.append(round(wages / 1e6))
+                    remaining_income.append(round(float(np.median(model.income[hit]))) if hit_count else 0)
                     done += 1
             print(f"    {done}/{total} combinations", end="\r")
     print(f"    {total}/{total} combinations   ")
@@ -389,6 +416,12 @@ def build_grid(df: pd.DataFrame, tracts: pd.DataFrame) -> dict:
         missing = {r.puma for r in tracts[tracts.featured].itertuples()} - set(names)
         if missing:
             raise SystemExit(f"error: no PUMA name for {sorted(missing)}")
+
+    tract_lookup = tracts.set_index("geoid")
+    meta_lookup = (featured_meta.set_index("geoid").to_dict("index")
+                   if featured_meta is not None else {})
+    housing_hit = model.hit(0, 30, 0, 0)
+    housing_solved = int(df.economically_vulnerable.sum()) - int(housing_hit.sum())
 
     return {
         "note": "Rates are per-million integers (444239 = 44.4239%). Exact, computed on "
@@ -418,23 +451,34 @@ def build_grid(df: pd.DataFrame, tracts: pd.DataFrame) -> dict:
         "careSteps": CARE_STEPS,
         "eligSteps": ELIG_STEPS,
         "county": county,
+        "countyCounts": county_counts,
         "countyKids": county_kids,
-        "rentSubsidyCostMillions": cost,
+        "rentSubsidyCostMillions": rent_cost,
+        "publicCostM": public_cost,
+        "wageCostM": wage_cost,
+        "remainingMedianIncome": remaining_income,
+        "housingOnly": {
+            "inRed": int(df.economically_vulnerable.sum()),
+            "solvedByHousingAlone": housing_solved,
+            "share": round(housing_solved / int(df.economically_vulnerable.sum()), 4),
+        },
         "kidsShare": round(float(kids.mean()), 4),
         "tracts": [
             {
-                "geoid": r.geoid,
-                "puma": r.puma,
-                "pumaName": names.get(r.puma, ""),
-                "households": int(r.households),
-                "vulnerableHouseholds": int(r.vulnerable_households),
-                "medianIncome": int(r.median_income),
-                "medianHlb": int(r.median_hlb),
-                "medianHousing": int(r.median_housing_month),
-                "medianShortfallMonth": int(r.median_shortfall_month),
-                "kidsShare": float(r.kids_share),
+                "geoid": geoid,
+                "puma": tract_lookup.loc[geoid].puma,
+                "pumaName": names.get(tract_lookup.loc[geoid].puma, ""),
+                "area": meta_lookup.get(geoid, {}).get("neighborhood_name", ""),
+                "category": meta_lookup.get(geoid, {}).get("category", ""),
+                "households": int(tract_lookup.loc[geoid].households),
+                "vulnerableHouseholds": int(tract_lookup.loc[geoid].vulnerable_households),
+                "medianIncome": int(tract_lookup.loc[geoid].median_income),
+                "medianHlb": int(tract_lookup.loc[geoid].median_hlb),
+                "medianHousing": int(tract_lookup.loc[geoid].median_housing_month),
+                "medianShortfallMonth": int(tract_lookup.loc[geoid].median_shortfall_month),
+                "kidsShare": float(tract_lookup.loc[geoid].kids_share),
             }
-            for r in tracts[tracts.featured].itertuples()
+            for geoid in featured
         ],
         "tractRates": per_tract,
     }
