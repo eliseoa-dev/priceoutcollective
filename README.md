@@ -30,12 +30,15 @@ varies.
 ## The demo
 
 Open **`index.html`** in a browser for the unified demo. One entry page switches between
-the policy calculator and the tract-level county map; each view can also open full screen.
-No build or application server is required.
+the policy calculator, the tract-level county map, and the wage-distance view; each can
+also open full screen. No build or application server is required.
 
 The calculator includes three levers, an eligibility test on the rent subsidy, and a live
 cost figure — all 945 combinations precomputed exactly on all 1.17M households, so nothing
-is estimated in the browser.
+is estimated in the browser. The wage-distance view answers a different question: not what
+one stated policy does countywide, but how large a raise it would take to close each
+below-budget household's own gap — a distribution, computed exactly, never a per-household
+claim.
 
 ## Where to look
 
@@ -71,16 +74,20 @@ dictionary in `data/raw/` — **read the Word document before doing analysis.**
 ```
 index.html               ← unified demo entry point
 data/
-  raw/                 organizers' source files, unmodified
-  build_dataset.py     raw microdata -> tracts.csv + grid.json
-  tracts.csv           727 census tracts, baseline figures
-  grid.json            exact rates at all 945 lever combinations
-  puma_names.csv       official 2020 PUMA names (Census TIGER/Line 2023)
+  raw/                       organizers' source files, unmodified
+  build_dataset.py           raw microdata -> tracts.csv + grid.json
+  tracts.csv                 727 census tracts, baseline figures
+  grid.json                  exact rates at all 945 lever combinations
+  wage_distance.json         distribution of the raise each below-budget household needs
+  puma_names.csv             official 2020 PUMA names (Census TIGER/Line 2023)
 policy_calculator/
-  prototype.html       ← the demo
-  sync_data.py         regenerates the page's embedded data from grid.json
-map/                   the tract-level map
-docs/                  methodology, sources, findings, claims ledger
+  prototype.html             ← the calculator
+  sync_data.py                regenerates the calculator's embedded data from grid.json
+  wage_distance.html         ← the wage-distance view
+  wage_distance_analysis.py  raw microdata -> data/wage_distance.json
+  sync_wage_distance.py       regenerates that page's embedded data
+map/                         the tract-level map
+docs/                        methodology, sources, findings, claims ledger
 ```
 
 ## Rebuilding from source
@@ -89,6 +96,7 @@ docs/                  methodology, sources, findings, claims ledger
 pip install -r data/requirements.txt
 cd data && python build_dataset.py --validate    # ~3 min over 1.17M rows
 cd ../policy_calculator && python sync_data.py
+python wage_distance_analysis.py && python sync_wage_distance.py
 ```
 
 `--validate` reproduces the organizers' own `economically_vulnerable` flag, spot-checks

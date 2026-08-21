@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Far From the Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Archivo:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+
+<style>
+/* ------------------------------------------------------------------
+   "How Far From the Line" — companion to prototype.html ("In the Red").
+   Same ledger identity, same palette and type, so the three views in
+   index.html read as one publication. This page has no levers: it is a
+   fixed report over data/wage_distance.json, not a live calculator.
+   ------------------------------------------------------------------ */
+
+:root {
+  --paper:    #E7E9E8;
+  --sheet:    #F6F7F6;
+  --sheet-2:  #EDEFEE;
+  --ink:      #11161A;
+  --ink-2:    #47535C;
+  --ink-3:    #5F6A72;
+  --rule:     #C8CFCE;
+  --rule-2:   #DCE1E0;
+
+  --red:      #A82617;
+  --red-soft: #E8D3CF;
+
+  --stack-1:  #11161A;
+  --stack-2:  #2C3841;
+  --stack-3:  #465761;
+  --stack-4:  #627480;
+  --stack-5:  #85939C;
+  --stack-6:  #A7B2B8;
+  --stack-7:  #C6CDD1;
+
+  --measure: 66ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:    #0F1315;
+    --sheet:    #171D20;
+    --sheet-2:  #1E2528;
+    --ink:      #E9EDEB;
+    --ink-2:    #A3AFB4;
+    --ink-3:    #808D94;
+    --rule:     #2C3639;
+    --rule-2:   #232B2E;
+
+    --red:      #E46A57;
+    --red-soft: #3A211C;
+
+    --stack-1:  #E9EDEB;
+    --stack-2:  #C7D0CE;
+    --stack-3:  #A6B1B1;
+    --stack-4:  #869393;
+    --stack-5:  #6A7778;
+    --stack-6:  #505C5E;
+    --stack-7:  #3A4446;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper:    #0F1315;
+  --sheet:    #171D20;
+  --sheet-2:  #1E2528;
+  --ink:      #E9EDEB;
+  --ink-2:    #A3AFB4;
+  --ink-3:    #6E7C83;
+  --rule:     #2C3639;
+  --rule-2:   #232B2E;
+
+  --red:      #E46A57;
+  --red-soft: #3A211C;
+
+  --stack-1:  #E9EDEB;
+  --stack-2:  #C7D0CE;
+  --stack-3:  #A6B1B1;
+  --stack-4:  #869393;
+  --stack-5:  #6A7778;
+  --stack-6:  #505C5E;
+  --stack-7:  #3A4446;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Archivo, ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sheet {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 26px 80px;
+  background: var(--sheet);
+  border-left: 1px solid var(--rule-2);
+  border-right: 1px solid var(--rule-2);
+  min-height: 100vh;
+}
+
+.label {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.fig {
+  font-family: "Bodoni Moda", Didot, "Times New Roman", serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -.01em;
+}
+
+.num {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.rule { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+
+section { padding: 30px 0; border-top: 1px solid var(--rule); }
+section:first-of-type { border-top: 0; }
+
+h2 {
+  font-family: "Bodoni Moda", Didot, serif;
+  font-weight: 500;
+  font-size: 25px;
+  letter-spacing: -.01em;
+  margin: 0 0 4px;
+  text-wrap: balance;
+}
+
+.sub { color: var(--ink-2); font-size: 13.5px; max-width: var(--measure); margin: 0; }
+
+/* ---- masthead ---- */
+
+header { padding: 34px 0 26px; }
+
+.masthead-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 16px; flex-wrap: wrap;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ink);
+}
+
+h1 {
+  font-family: "Bodoni Moda", Didot, serif;
+  font-weight: 400;
+  font-size: clamp(36px, 6vw, 62px);
+  line-height: .98;
+  letter-spacing: -.02em;
+  margin: 22px 0 0;
+  text-wrap: balance;
+}
+h1 .red { color: var(--red); font-style: italic; }
+
+.deck {
+  margin: 16px 0 0;
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: var(--measure);
+}
+.deck strong { color: var(--ink); font-weight: 500; }
+
+/* ---- hero + bucket chart ---- */
+
+.hero { display: grid; grid-template-columns: minmax(210px, 280px) 1fr; gap: 34px; align-items: start; }
+
+.hero-fig { display: flex; flex-direction: column; gap: 2px; }
+.hero-pct {
+  font-family: "Bodoni Moda", Didot, serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: clamp(56px, 9vw, 92px);
+  line-height: .85;
+  letter-spacing: -.035em;
+  color: var(--red);
+}
+.hero-count { font-size: 14px; color: var(--ink-2); margin-top: 10px; }
+.hero-count b { font-weight: 500; color: var(--ink); }
+.hero-note {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule-2);
+  font-size: 12.5px; color: var(--ink-3); line-height: 1.5;
+}
+
+.buckets { display: flex; flex-direction: column; }
+.bucket {
+  display: grid; grid-template-columns: 128px 1fr auto; gap: 14px; align-items: center;
+  padding: 8px 0; border-top: 1px solid var(--rule-2); font-size: 13px;
+}
+.bucket:first-child { border-top: 0; }
+.bucket .nm { font-weight: 500; }
+.bucket .nm small { display: block; font-weight: 400; color: var(--ink-3); font-size: 11px; margin-top: 2px; }
+.bucket .track { display: block; background: var(--rule-2); height: 10px; width: 100%; }
+.bucket .fill { display: block; height: 10px; }
+.bucket .stat { font-family: "DM Mono", monospace; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.bucket .stat b { display: block; font-size: 13.5px; color: var(--ink); }
+.bucket .stat span { display: block; font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+
+/* ---- callout ---- */
+
+.callout { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-top: 4px; }
+.callout > div { padding: 20px 22px 20px 0; }
+.callout > div + div { padding-left: 26px; border-left: 1px solid var(--rule-2); }
+.callout .k { font-size: 13px; color: var(--ink-2); margin: 0 0 8px; }
+.callout .v { font-family: "Bodoni Moda", Didot, serif; font-variant-numeric: tabular-nums; font-size: 38px; line-height: 1; }
+.callout .n { font-size: 12px; color: var(--ink-3); margin: 9px 0 0; }
+
+/* ---- percentile ladder ---- */
+
+.ladder { display: flex; flex-wrap: wrap; gap: 0; margin-top: 18px; border-top: 1px solid var(--ink); }
+.rung {
+  flex: 1 1 110px; padding: 12px 14px 0; border-right: 1px solid var(--rule-2);
+}
+.rung:last-child { border-right: 0; }
+.rung .v { font-family: "Bodoni Moda", Didot, serif; font-variant-numeric: tabular-nums; font-size: 23px; }
+.rung .k { font-size: 10.5px; color: var(--ink-3); font-family: "DM Mono", monospace; letter-spacing: .06em; text-transform: uppercase; margin-top: 3px; }
+
+/* ---- ranked tables ---- */
+
+.tbl-wrap { overflow-x: auto; margin-top: 20px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { padding: 9px 12px; text-align: right; white-space: nowrap; }
+th {
+  font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-3); font-weight: 400;
+  border-bottom: 1px solid var(--ink);
+}
+td { border-bottom: 1px solid var(--rule-2); font-family: "DM Mono", monospace; font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th:nth-child(2), td:nth-child(2) { text-align: left; font-family: Archivo, sans-serif; }
+tbody tr:hover { background: var(--sheet-2); }
+.bar-cell { width: 150px; }
+.minibar-track { display: block; background: var(--rule-2); width: 100%; height: 7px; }
+.minibar { display: block; height: 7px; background: var(--red); }
+td.hi { color: var(--red); }
+
+table.check { width: 100%; border-collapse: collapse; min-width: 0; }
+table.check th, table.check td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--rule-2); }
+table.check th { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); font-weight: 400; }
+table.check td.v { text-align: right; font-family: "DM Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---- method ---- */
+
+.method { columns: 2; column-gap: 40px; margin-top: 18px; }
+.method > div { break-inside: avoid; margin-bottom: 20px; }
+.method h3 {
+  font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0 0 7px; font-weight: 400;
+}
+.method p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-2); }
+.method p + p { margin-top: 8px; }
+.method code { font-family: "DM Mono", monospace; font-size: 11.5px; background: var(--sheet-2); padding: 1px 4px; }
+
+.provenance {
+  font-size: 12.5px; color: var(--ink-2); line-height: 1.55;
+  border-left: 2px solid var(--red); padding: 3px 0 3px 14px; margin: 0;
+  max-width: var(--measure);
+}
+.provenance b { color: var(--ink); font-weight: 500; }
+
+footer {
+  padding: 26px 0 0; border-top: 2px solid var(--ink); margin-top: 30px;
+  display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  font-size: 11.5px; color: var(--ink-3);
+}
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; gap: 26px; }
+  .method { columns: 1; }
+  .callout { grid-template-columns: 1fr; }
+  .callout > div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--rule-2); }
+  .bucket { grid-template-columns: 1fr; gap: 6px; }
+  .bucket .stat { text-align: left; }
+}
+</style>
+
+<div class="sheet">
+
+  <header>
+    <div class="masthead-top">
+      <span class="label">Priceout Collective &nbsp;·&nbsp; Affordability</span>
+      <span class="label">San Diego County &nbsp;·&nbsp; 2024</span>
+    </div>
+
+    <h1>Not everyone in the red is <span class="red">the same distance</span> from getting out.</h1>
+
+    <p class="sub" style="margin-top:10px">
+      The calculator shows what one stated policy does to the whole county. This page asks
+      the personal question instead: for a household already below its budget, how large a
+      raise — on its own, nothing else changing — would put it exactly at the line?
+    </p>
+
+    <p class="deck">
+      That number falls straight out of the same formula as everywhere else on this site:
+      <code class="num" style="font-size:14px">(required income ÷ actual income − 1) × 100</code>.
+      Computed exactly for all <strong id="m-vuln">520,257</strong> households below their
+      budget, it is never a claim about any one household — every row is synthetic — but the
+      shape of the whole distribution is exact, not estimated.
+    </p>
+  </header>
+
+  <section>
+    <div class="hero">
+      <div class="hero-fig">
+        <span class="label">Median raise needed to close a household's own gap</span>
+        <span class="hero-pct fig" id="m-median">81.8%</span>
+        <span class="hero-count">
+          among <b id="m-vuln-2">520,257</b> households below their budget
+        </span>
+        <div class="hero-note">
+          Half would need to raise their income by more than this — most by nearly doubling
+          it — to clear their own line by wages alone.
+        </div>
+      </div>
+
+      <div class="buckets" id="buckets" role="img" aria-label="Distribution of the raise each below-budget household would need to close its own gap"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Two edges of the same distribution</h2>
+    <p class="sub">
+      One group a wage lever can never reach, no matter how large. Another is already inside
+      the range this site's own calculator models.
+    </p>
+    <div class="callout">
+      <div>
+        <p class="k">Report zero income — no raise, of any size, reaches them</p>
+        <p class="v fig" id="m-zero">15,913</p>
+        <p class="n" id="m-zero-n">3.1% of households below their budget</p>
+      </div>
+      <div>
+        <p class="k">Reachable within the calculator's own +50% maximum wage slider</p>
+        <p class="v fig" id="m-slider">186,454</p>
+        <p class="n" id="m-slider-n">35.8% of households below their budget</p>
+      </div>
+    </div>
+
+    <div class="ladder" id="ladder"></div>
+    <p class="sub" style="margin-top:10px">
+      Percentiles of raise needed, among households with any recorded income at all
+      (excludes the zero-income group above).
+    </p>
+  </section>
+
+  <section>
+    <h2>Who is furthest from the line</h2>
+    <p class="sub">
+      Households with no children under 12 are the majority below budget — but per household,
+      singles need close to the largest raise of any group to clear their line, more than
+      two-adult households with young children. Bars are capped at 200%; the number is exact.
+    </p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Composition</th><th>Households below budget</th><th>Zero-income share</th><th class="bar-cell"></th><th>Median raise needed</th></tr>
+        </thead>
+        <tbody id="comp-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>By income band</h2>
+    <p class="sub">
+      Intuitive in direction — lower income needs a bigger raise — but not in size: the
+      lowest band needs a raise many multiples of its own income; the highest needs barely
+      one tenth.
+    </p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Income band</th><th>Households below budget</th><th>Zero-income share</th><th class="bar-cell"></th><th>Median raise needed</th></tr>
+        </thead>
+        <tbody id="band-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>Method &amp; limits</h2>
+    <div class="method">
+      <div>
+        <h3>The formula</h3>
+        <p>
+          For each household below its budget, <code>wage_lift_pct_needed =
+          (hlb_year / hh_income − 1) × 100</code> — the smallest uniform raise that clears
+          its own line, holding housing and childcare costs fixed. That is exactly what the
+          calculator's wage lever alone does (cap and childcare sliders at zero), just solved
+          for the household's own threshold instead of evaluated at one preset percentage.
+        </p>
+      </div>
+      <div>
+        <h3>Why this isn't a prediction</h3>
+        <p>
+          Nothing here is estimated or modeled from proxies. <code>hlb_year</code> and
+          <code>hh_income</code> are both given; the raise needed is arithmetic on two known
+          numbers, computed once for all 520,257 households and reported as a distribution.
+          See <a href="../docs/FINDINGS.md#the-model-we-removed">the model we removed</a> for
+          why this project does not ship a classifier over the same formula.
+        </p>
+      </div>
+      <div>
+        <h3>Zero-income households</h3>
+        <p>
+          A percentage lever multiplies income by <code>(1 + x)</code>. At an income of zero,
+          every multiple is still zero — no raise of any size closes that household's gap.
+          They are reported separately, never folded into the percentile distribution.
+        </p>
+      </div>
+      <div>
+        <h3>Composition categories</h3>
+        <p>
+          The same five categories used in the calculator's "who is falling short" section,
+          so the two pages describe the same population the same way.
+        </p>
+      </div>
+      <div>
+        <h3>Cross-check against the calculator's own grid</h3>
+        <p>
+          Recomputing, at each of the calculator's nine wage steps, how many households
+          would still be below budget reproduces <code>data/grid.json</code>'s own shipped
+          counts for the wage lever alone (rent cap and childcare off) — two independent code
+          paths over the same population, the standing bar this project holds a number to
+          before it ships.
+        </p>
+        <div class="tbl-wrap" style="margin-top:10px">
+          <table class="check">
+            <thead><tr><th>Wage step</th><th>Recomputed remaining</th><th>Shipped (grid.json)</th><th>Diff</th></tr></thead>
+            <tbody id="check-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3>Same caveats as everywhere else</h3>
+        <p class="provenance">
+          <b>Rows are synthetic households</b>, cloned from 55,218 PUMS donors — valid for
+          distributions, never for claims about individuals. <b>No time dimension</b>: this is
+          a raise applied once, not wage growth over years, and implies nothing about how long
+          that would take.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Building for Good &nbsp;·&nbsp; Data Science Alliance at UC San Diego</span>
+    <span class="num">San Diego County HLB, 2024 · policy_calculator/wage_distance_analysis.py</span>
+  </footer>
+</div>
+
+<script>
+/* BEGIN GENERATED DATA */
+var WD = {"note":"Distribution of the minimum uniform wage lift that would put each currently-below-budget household exactly at its own line, holding housing and childcare costs fixed -- the same assumption the wage slider alone uses. Never a per-household figure; every row is synthetic.","vulnerableHouseholds":520257,"zeroIncomeHouseholds":15913,"zeroIncomeShare":0.0306,"buckets":{"zero_income":15913,"0-10%":49334,"10-25%":60839,"25-50%":76281,"50-100%":95157,"100%+":222733},"percentiles":{"p10":10.3,"p25":29.3,"p50":81.8,"p75":205.6,"p90":456.6,"p95":886.7,"p99":4872.7},"withinCalculatorSliderRange":{"maxWageStepModeled":50,"householdsReachable":186454,"shareOfVulnerable":0.3584},"byComposition":[{"label":"One adult, no children under 12","households":155852,"zeroIncomeShare":0.0615,"medianPctNeeded":111.6},{"label":"Two or more adults, no children under 12","households":216917,"zeroIncomeShare":0.017,"medianPctNeeded":60.6},{"label":"Two or more adults, with children under 12","households":126855,"zeroIncomeShare":0.0077,"medianPctNeeded":82.7},{"label":"One adult, with children under 12","households":20398,"zeroIncomeShare":0.0757,"medianPctNeeded":172.7},{"label":"No adult aged 19 or over","households":235,"zeroIncomeShare":0.4979,"medianPctNeeded":494.7}],"byIncomeBand":[{"label":"Less than $15,000","households":72602,"zeroIncomeShare":0.2192,"medianPctNeeded":770.0},{"label":"$15,000 to $24,999","households":52074,"zeroIncomeShare":0.0,"medianPctNeeded":247.3},{"label":"$25,000 to $34,999","households":56465,"zeroIncomeShare":0.0,"medianPctNeeded":144.5},{"label":"$35,000 to $49,999","households":87145,"zeroIncomeShare":0.0,"medianPctNeeded":82.3},{"label":"$50,000 to $74,999","households":115574,"zeroIncomeShare":0.0,"medianPctNeeded":43.1},{"label":"$75,000 to $99,999","households":62404,"zeroIncomeShare":0.0,"medianPctNeeded":35.5},{"label":"$100,000 to $149,999","households":56046,"zeroIncomeShare":0.0,"medianPctNeeded":26.8},{"label":"$150,000 to $199,999","households":15923,"zeroIncomeShare":0.0,"medianPctNeeded":12.0},{"label":"$200,000 or more","households":2024,"zeroIncomeShare":0.0,"medianPctNeeded":8.4}],"crossCheckVsGrid":[{"wagePct":0,"recomputedRemaining":520257,"shippedRemaining":520258,"diff":1},{"wagePct":5,"recomputedRemaining":494369,"shippedRemaining":494370,"diff":1},{"wagePct":10,"recomputedRemaining":470923,"shippedRemaining":470928,"diff":5},{"wagePct":15,"recomputedRemaining":449618,"shippedRemaining":449618,"diff":0},{"wagePct":20,"recomputedRemaining":428978,"shippedRemaining":428978,"diff":0},{"wagePct":25,"recomputedRemaining":410084,"shippedRemaining":410084,"diff":0},{"wagePct":30,"recomputedRemaining":391772,"shippedRemaining":391772,"diff":0},{"wagePct":40,"recomputedRemaining":360324,"shippedRemaining":360324,"diff":0},{"wagePct":50,"recomputedRemaining":333803,"shippedRemaining":333803,"diff":0}]};
+/* END GENERATED DATA */
+
+(function () {
+  "use strict";
+  if (!WD) return;
+
+  function el(id) { return document.getElementById(id); }
+  function pct(x, d) { return x.toFixed(d == null ? 1 : d) + "%"; }
+  function commas(x) { return x.toLocaleString(); }
+
+  el("m-vuln").textContent = commas(WD.vulnerableHouseholds);
+  el("m-vuln-2").textContent = commas(WD.vulnerableHouseholds);
+  el("m-median").textContent = pct(WD.percentiles.p50);
+  el("m-zero").textContent = commas(WD.zeroIncomeHouseholds);
+  el("m-zero-n").textContent = pct(WD.zeroIncomeShare * 100) + " of households below their budget";
+  el("m-slider").textContent = commas(WD.withinCalculatorSliderRange.householdsReachable);
+  el("m-slider-n").textContent = pct(WD.withinCalculatorSliderRange.shareOfVulnerable * 100) +
+    " of households below their budget";
+
+  /* ---------- bucket chart ---------- */
+  (function () {
+    var order = [
+      ["zero_income", "Zero income", "no raise ever reaches this", "var(--red)"],
+      ["0-10%", "0–10% raise", "nearly there", "var(--stack-5)"],
+      ["10-25%", "10–25% raise", "", "var(--stack-4)"],
+      ["25-50%", "25–50% raise", "", "var(--stack-3)"],
+      ["50-100%", "50–100% raise", "", "var(--stack-2)"],
+      ["100%+", "100%+ raise", "would more than double income", "var(--stack-1)"]
+    ];
+    var host = el("buckets");
+    var total = WD.vulnerableHouseholds;
+    order.forEach(function (row) {
+      var key = row[0], label = row[1], note = row[2], color = row[3];
+      var count = WD.buckets[key];
+      var share = count / total * 100;
+      var d = document.createElement("div");
+      d.className = "bucket";
+      d.innerHTML =
+        '<span class="nm">' + label + (note ? "<small>" + note + "</small>" : "") + "</span>" +
+        '<span class="track"><span class="fill" style="width:' + share + "%;background:" + color + '"></span></span>' +
+        '<span class="stat"><b>' + commas(count) + "</b><span>" + pct(share) + " of below-budget households</span></span>";
+      host.appendChild(d);
+    });
+  })();
+
+  /* ---------- percentile ladder ---------- */
+  (function () {
+    var labels = { p10: "10th pct", p25: "25th pct", p50: "Median", p75: "75th pct", p90: "90th pct", p95: "95th pct", p99: "99th pct" };
+    var host = el("ladder");
+    Object.keys(labels).forEach(function (key) {
+      var d = document.createElement("div");
+      d.className = "rung";
+      d.innerHTML = '<div class="v fig">' + pct(WD.percentiles[key]) + '</div><div class="k">' + labels[key] + "</div>";
+      host.appendChild(d);
+    });
+  })();
+
+  /* ---------- ranked tables ---------- */
+  (function () {
+    var CAP = 200;
+    function rows(hostId, list) {
+      var host = el(hostId);
+      var sorted = list.slice().sort(function (a, b) {
+        return (b.medianPctNeeded || 0) - (a.medianPctNeeded || 0);
+      });
+      sorted.forEach(function (r) {
+        var tr = document.createElement("tr");
+        var barWidth = r.medianPctNeeded == null ? 0 : Math.min(100, r.medianPctNeeded / CAP * 100);
+        var overCap = r.medianPctNeeded != null && r.medianPctNeeded > CAP;
+        tr.innerHTML =
+          "<td>" + r.label + "</td>" +
+          "<td>" + commas(r.households) + "</td>" +
+          "<td>" + pct(r.zeroIncomeShare * 100) + "</td>" +
+          '<td class="bar-cell"><span class="minibar-track"><span class="minibar" style="width:' + barWidth + '%"></span></span></td>' +
+          '<td class="' + (overCap ? "hi" : "") + '">' +
+          (r.medianPctNeeded == null ? "—" : pct(r.medianPctNeeded)) + "</td>";
+        host.appendChild(tr);
+      });
+    }
+    rows("comp-body", WD.byComposition);
+    rows("band-body", WD.byIncomeBand);
+  })();
+
+  /* ---------- cross-check table ---------- */
+  (function () {
+    var host = el("check-body");
+    WD.crossCheckVsGrid.forEach(function (r) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>+" + r.wagePct + "%</td>" +
+        '<td class="v">' + commas(r.recomputedRemaining) + "</td>" +
+        '<td class="v">' + commas(r.shippedRemaining) + "</td>" +
+        '<td class="v">' + r.diff + "</td>";
+      host.appendChild(tr);
+    });
+  })();
+})();
+</script>
+</html>

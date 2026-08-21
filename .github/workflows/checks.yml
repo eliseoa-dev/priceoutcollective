@@ -36,6 +36,16 @@ jobs:
             exit 1
           }
 
+      - name: Wage-distance view matches data/wage_distance.json
+        working-directory: policy_calculator
+        run: |
+          python sync_wage_distance.py --check || {
+            echo ""
+            echo "wage_distance.html's embedded data is out of date."
+            echo "Fix: cd policy_calculator && python sync_wage_distance.py"
+            exit 1
+          }
+
       - name: Pipeline reproduces the organizers' vulnerability flag
         working-directory: data
         run: |
@@ -46,5 +56,16 @@ jobs:
             echo ""
             echo "Rebuilding produced different artifacts than the ones committed."
             echo "Fix: cd data && python build_dataset.py, then re-run sync_data.py"
+            exit 1
+          }
+
+      - name: wage_distance.json reproduces from the raw microdata
+        working-directory: policy_calculator
+        run: |
+          python wage_distance_analysis.py
+          git diff --exit-code -- ../data/wage_distance.json || {
+            echo ""
+            echo "Rebuilding produced a different data/wage_distance.json than the one committed."
+            echo "Fix: cd policy_calculator && python wage_distance_analysis.py, then re-run sync_wage_distance.py"
             exit 1
           }

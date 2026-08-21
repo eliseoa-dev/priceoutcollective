@@ -85,6 +85,7 @@
         <div class="tabs" role="tablist" aria-label="Choose a demo view">
           <button id="calculator-tab" role="tab" aria-selected="true" aria-controls="calculator-panel">Policy Calculator</button>
           <button id="map-tab" role="tab" aria-selected="false" aria-controls="map-panel">County Map</button>
+          <button id="wage-tab" role="tab" aria-selected="false" aria-controls="wage-panel">Wage Distance</button>
           <button id="about-tab" role="tab" aria-selected="false" aria-controls="about-panel">Team &amp; Credits</button>
         </div>
         <a class="full" id="full-link" href="policy_calculator/prototype.html">Open this view full screen ↗</a>
@@ -95,6 +96,9 @@
       </div>
       <div class="panel" id="map-panel" role="tabpanel" aria-labelledby="map-tab" hidden>
         <iframe title="Interactive San Diego County affordability map" data-src="map/output/sd_affordability_map.html" loading="lazy"></iframe>
+      </div>
+      <div class="panel" id="wage-panel" role="tabpanel" aria-labelledby="wage-tab" hidden>
+        <iframe title="Wage distance analysis: how large a raise would close each household's own gap" data-src="policy_calculator/wage_distance.html" loading="lazy"></iframe>
       </div>
       <div class="panel" id="about-panel" role="tabpanel" aria-labelledby="about-tab" hidden>
         <div class="about">
@@ -132,6 +136,7 @@
       var views = {
         calculator: { tab: "calculator-tab", panel: "calculator-panel", href: "policy_calculator/prototype.html" },
         map: { tab: "map-tab", panel: "map-panel", href: "map/output/sd_affordability_map.html" },
+        wage: { tab: "wage-tab", panel: "wage-panel", href: "policy_calculator/wage_distance.html" },
         about: { tab: "about-tab", panel: "about-panel" }
       };
 
@@ -156,7 +161,11 @@
       Object.keys(views).forEach(function (name) {
         document.getElementById(views[name].tab).addEventListener("click", function () { select(name, true); });
       });
-      var initial = location.hash === "#map" ? "map" : location.hash === "#about" ? "about" : "calculator";
+      var initial =
+        location.hash === "#map" ? "map" :
+        location.hash === "#wage" ? "wage" :
+        location.hash === "#about" ? "about" :
+        "calculator";
       select(initial, false);
     })();
   </script>

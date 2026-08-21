@@ -49,6 +49,34 @@ cd ../policy_calculator && python sync_data.py
 `python sync_data.py --check` and fails the build if the page and the pipeline
 have drifted — so a stale demo cannot reach `main`.
 
+## wage_distance.html — the wage-distance view
+
+A different question from the calculator. The calculator asks what one stated policy does
+to the whole county; this page asks, for a household already below its budget, how large a
+raise — on its own, nothing else changing — would put it exactly at the line. Open
+**`wage_distance.html`** directly, or use the "Wage Distance" tab in the top-level
+`index.html`. Same no-build-step, everything-embedded model as the calculator.
+
+The exact formula: `wage_lift_pct_needed = (hlb_year / hh_income − 1) × 100`, computed once
+for all 520,257 households below their budget and reported as a distribution — buckets,
+percentiles, and breakdowns by composition and income band — never as a claim about any one
+(synthetic) household.
+
+`wage_distance_analysis.py` reads the raw microdata directly and writes
+`data/wage_distance.json`; `sync_wage_distance.py` embeds it into the page, the same
+generated-data-block pattern `sync_data.py` uses for the calculator. It cross-checks its own
+output against `data/grid.json`'s wage-only rates at all nine of the calculator's wage
+steps — two independent code paths over the same population — and refuses to sync if they
+disagree by more than the project's documented 5-household rounding tolerance.
+
+```bash
+python wage_distance_analysis.py    # rebuilds ../data/wage_distance.json from the raw gzip
+python sync_wage_distance.py        # embeds it into wage_distance.html
+python sync_wage_distance.py --check
+```
+
+Findings in `docs/FINDINGS.md`, supporting finding 6.
+
 ## Standalone analysis scripts
 
 Two scripts from `feature/ml-vulnerability-simulator`, both reading the shared
@@ -60,15 +88,6 @@ under four policy scenarios. Independent of `data/build_dataset.py`, and the two
 agree: both reproduce the shipped `economically_vulnerable` flag to 99.9999%
 (one household in 1,171,123), and both put a 50% childcare subsidy at 43.58%.
 Two implementations converging is worth more than either alone.
-
-**`wage_distance_analysis.py`** — for every household below its budget, computes the
-exact minimum wage raise that would close *that household's own gap*, holding housing and
-childcare fixed (the same assumption the wage slider alone makes). The published grid
-answers "did this one stated policy work" at nine discrete steps; this answers "how far is
-the population actually standing from the line," continuously. Cross-checks itself against
-`data/grid.json`'s own wage-only rates at all nine steps as an independent code path,
-matching within the project's documented 5-household rounding tolerance. Writes
-`outputs/wage_distance_summary.json`. Findings in `docs/FINDINGS.md`, supporting finding 6.
 
 **`predictive_risk_model.py`** — predicts vulnerability from income, household
 composition, and PUMA only, deliberately excluding the itemized cost columns

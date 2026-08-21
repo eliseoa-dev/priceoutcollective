@@ -1,0 +1,172 @@
+{
+  "note": "Distribution of the minimum uniform wage lift that would put each currently-below-budget household exactly at its own line, holding housing and childcare costs fixed -- the same assumption the wage slider alone uses. Never a per-household figure; every row is synthetic.",
+  "vulnerableHouseholds": 520257,
+  "zeroIncomeHouseholds": 15913,
+  "zeroIncomeShare": 0.0306,
+  "buckets": {
+    "zero_income": 15913,
+    "0-10%": 49334,
+    "10-25%": 60839,
+    "25-50%": 76281,
+    "50-100%": 95157,
+    "100%+": 222733
+  },
+  "percentiles": {
+    "p10": 10.3,
+    "p25": 29.3,
+    "p50": 81.8,
+    "p75": 205.6,
+    "p90": 456.6,
+    "p95": 886.7,
+    "p99": 4872.7
+  },
+  "withinCalculatorSliderRange": {
+    "maxWageStepModeled": 50,
+    "householdsReachable": 186454,
+    "shareOfVulnerable": 0.3584
+  },
+  "byComposition": [
+    {
+      "label": "One adult, no children under 12",
+      "households": 155852,
+      "zeroIncomeShare": 0.0615,
+      "medianPctNeeded": 111.6
+    },
+    {
+      "label": "Two or more adults, no children under 12",
+      "households": 216917,
+      "zeroIncomeShare": 0.017,
+      "medianPctNeeded": 60.6
+    },
+    {
+      "label": "Two or more adults, with children under 12",
+      "households": 126855,
+      "zeroIncomeShare": 0.0077,
+      "medianPctNeeded": 82.7
+    },
+    {
+      "label": "One adult, with children under 12",
+      "households": 20398,
+      "zeroIncomeShare": 0.0757,
+      "medianPctNeeded": 172.7
+    },
+    {
+      "label": "No adult aged 19 or over",
+      "households": 235,
+      "zeroIncomeShare": 0.4979,
+      "medianPctNeeded": 494.7
+    }
+  ],
+  "byIncomeBand": [
+    {
+      "label": "Less than $15,000",
+      "households": 72602,
+      "zeroIncomeShare": 0.2192,
+      "medianPctNeeded": 770.0
+    },
+    {
+      "label": "$15,000 to $24,999",
+      "households": 52074,
+      "zeroIncomeShare": 0.0,
+      "medianPctNeeded": 247.3
+    },
+    {
+      "label": "$25,000 to $34,999",
+      "households": 56465,
+      "zeroIncomeShare": 0.0,
+      "medianPctNeeded": 144.5
+    },
+    {
+      "label": "$35,000 to $49,999",
+      "households": 87145,
+      "zeroIncomeShare": 0.0,
+      "medianPctNeeded": 82.3
+    },
+    {
+      "label": "$50,000 to $74,999",
+      "households": 115574,
+      "zeroIncomeShare": 0.0,
+      "medianPctNeeded": 43.1
+    },
+    {
+      "label": "$75,000 to $99,999",
+      "households": 62404,
+      "zeroIncomeShare": 0.0,
+      "medianPctNeeded": 35.5
+    },
+    {
+      "label": "$100,000 to $149,999",
+      "households": 56046,
+      "zeroIncomeShare": 0.0,
+      "medianPctNeeded": 26.8
+    },
+    {
+      "label": "$150,000 to $199,999",
+      "households": 15923,
+      "zeroIncomeShare": 0.0,
+      "medianPctNeeded": 12.0
+    },
+    {
+      "label": "$200,000 or more",
+      "households": 2024,
+      "zeroIncomeShare": 0.0,
+      "medianPctNeeded": 8.4
+    }
+  ],
+  "crossCheckVsGrid": [
+    {
+      "wagePct": 0,
+      "recomputedRemaining": 520257,
+      "shippedRemaining": 520258,
+      "diff": 1
+    },
+    {
+      "wagePct": 5,
+      "recomputedRemaining": 494369,
+      "shippedRemaining": 494370,
+      "diff": 1
+    },
+    {
+      "wagePct": 10,
+      "recomputedRemaining": 470923,
+      "shippedRemaining": 470928,
+      "diff": 5
+    },
+    {
+      "wagePct": 15,
+      "recomputedRemaining": 449618,
+      "shippedRemaining": 449618,
+      "diff": 0
+    },
+    {
+      "wagePct": 20,
+      "recomputedRemaining": 428978,
+      "shippedRemaining": 428978,
+      "diff": 0
+    },
+    {
+      "wagePct": 25,
+      "recomputedRemaining": 410084,
+      "shippedRemaining": 410084,
+      "diff": 0
+    },
+    {
+      "wagePct": 30,
+      "recomputedRemaining": 391772,
+      "shippedRemaining": 391772,
+      "diff": 0
+    },
+    {
+      "wagePct": 40,
+      "recomputedRemaining": 360324,
+      "shippedRemaining": 360324,
+      "diff": 0
+    },
+    {
+      "wagePct": 50,
+      "recomputedRemaining": 333803,
+      "shippedRemaining": 333803,
+      "diff": 0
+    }
+  ]
+}

@@ -63,6 +63,11 @@ runway metric was retired for exactly this reason.
   vulnerability and cost medians.
 - **`grid.json`** — vulnerability rates at all 315 policy-lever combinations,
   computed exactly on all 1.17M households. Rates are per-million integers.
+- **`wage_distance.json`** — for every household below its budget, the exact
+  minimum wage raise that would close its own gap, reported as a distribution
+  (buckets, percentiles, composition/income-band breakdowns). Produced by
+  `policy_calculator/wage_distance_analysis.py`, consumed by
+  `policy_calculator/wage_distance.html`.
 
 ```bash
 python build_dataset.py --validate

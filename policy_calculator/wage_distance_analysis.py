@@ -37,8 +37,10 @@ import pandas as pd
 HERE = Path(__file__).parent
 DATASET_PATH = HERE / ".." / "data" / "raw" / "san_diego_ca_hlb_hackathon_2024.csv.gz"
 GRID_PATH = HERE / ".." / "data" / "grid.json"
-OUTPUT_DIR = HERE / ".." / "outputs"
-OUTPUT_JSON = OUTPUT_DIR / "wage_distance_summary.json"
+# Committed alongside grid.json, not written to outputs/: wage_distance.html
+# embeds a copy of this file the same way prototype.html embeds grid.json, so
+# it has to be a tracked source of truth, not a gitignored scratch artifact.
+OUTPUT_JSON = HERE / ".." / "data" / "wage_distance.json"
 
 COLS = [
     "hh_income", "hlb_year", "economically_vulnerable",
@@ -224,7 +226,6 @@ def summarize(df: pd.DataFrame) -> dict:
 
 
 def main():
-    OUTPUT_DIR.mkdir(exist_ok=True)
     df = load()
     result = summarize(df)
 
