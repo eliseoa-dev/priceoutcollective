@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f2e8"/><stop offset="1" stop-color="#efe5d2"/></linearGradient></defs>
+  <rect width="512" height="512" fill="url(#g)"/>
+  <!-- the cliff: a floor that drops -->
+  <path d="M0 318 H300 V512 H0 Z" fill="#b5412a"/>
+  <path d="M300 318 L512 318 L512 512 L300 512 Z" fill="#7a2512"/>
+  <path d="M300 318 L300 512" stroke="#f7f2e8" stroke-width="6"/>
+  <!-- the home, one step from the edge -->
+  <path d="M176 318 V236 L232 190 L288 236 V318 Z" fill="#1f1b15"/>
+  <rect x="220" y="268" width="24" height="50" fill="#f7f2e8"/>
+  <!-- the rent arrow, up -->
+  <path d="M372 262 V120" stroke="#1f1b15" stroke-width="22" stroke-linecap="round"/>
+  <path d="M330 164 L372 110 L414 164" fill="none" stroke="#1f1b15" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="452" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="58" fill="#f7f2e8">one raise away</text>
+</svg>

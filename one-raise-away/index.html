@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#f7f2e8">
+  <meta name="description" content="One Raise Away — how close San Diego households sit to the edge, and the early signal nobody tracks.">
+  <title>One Raise Away</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,700;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top" id="top">
+    <button class="top__back" id="backBtn" data-fn="back" aria-label="Back" hidden><svg class="ico" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <h1 class="top__title" id="topTitle">One Raise Away</h1>
+    <button class="top__act" id="topAct" hidden></button>
+  </header>
+
+  <main id="app"></main>
+  <nav id="tabs" aria-label="Sections"><div class="in">
+    <button data-tab="#/home">Story</button>
+    <button data-tab="#/cliff">The cliff</button>
+    <button data-tab="#/signal">Early signal</button>
+    <button data-tab="#/ask">The ask</button>
+  </div></nav>
+
+  <div id="sheet"><div class="sh" id="sheetIn"></div></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <footer class="foot"><span id="appVersion"></span></footer>
+
+  <script>
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach((t) => {
+      document.addEventListener(t, (ev) => ev.preventDefault(), { passive: false });
+    });
+    document.addEventListener('dblclick', (ev) => ev.preventDefault(), { passive: false });
+  </script>
+  <script src="shell.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      const hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.register('./sw.js').then((reg) => {
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') reg.update();
+        });
+      });
+      let swRefreshed = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || swRefreshed) return;
+        swRefreshed = true;
+        location.reload();
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "One Raise Away",
+  "short_name": "One Raise Away",
+  "description": "One Raise Away",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#faf6ec",
+  "theme_color": "#faf6ec",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
