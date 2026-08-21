@@ -61,6 +61,15 @@ agree: both reproduce the shipped `economically_vulnerable` flag to 99.9999%
 (one household in 1,171,123), and both put a 50% childcare subsidy at 43.58%.
 Two implementations converging is worth more than either alone.
 
+**`wage_distance_analysis.py`** — for every household below its budget, computes the
+exact minimum wage raise that would close *that household's own gap*, holding housing and
+childcare fixed (the same assumption the wage slider alone makes). The published grid
+answers "did this one stated policy work" at nine discrete steps; this answers "how far is
+the population actually standing from the line," continuously. Cross-checks itself against
+`data/grid.json`'s own wage-only rates at all nine steps as an independent code path,
+matching within the project's documented 5-household rounding tolerance. Writes
+`outputs/wage_distance_summary.json`. Findings in `docs/FINDINGS.md`, supporting finding 6.
+
 **`predictive_risk_model.py`** — predicts vulnerability from income, household
 composition, and PUMA only, deliberately excluding the itemized cost columns
 that define the label. 97.3% accuracy, 0.998 AUC.

@@ -90,6 +90,31 @@ The universal version is the *most* cost-effective per household lifted — beca
 households nearest the line are cheapest to lift, and many of them are not poor. That
 is an uncomfortable result and it is left standing. `[POLICY SIMULATION]`
 
+**6. Singles without children are the majority of households below budget, but need the largest raise to clear it.** For each household below its budget, holding housing and childcare costs fixed — the same assumption the calculator's wage slider makes on its own — there is an exact minimum raise that would close that household's own gap: `wage_lift_pct_needed = (hlb_year / hh_income − 1) × 100`. Its distribution, by composition:
+
+| composition | households below budget | median raise needed to clear the line |
+|---|---|---|
+| Two or more adults, no children under 12 | 216,917 | 60.6% |
+| Two or more adults, with children under 12 | 126,855 | 82.7% |
+| **One adult, no children under 12** | **155,852** | **111.6%** (more than double) |
+| One adult, with children under 12 | 20,398 | 172.7% (nearly triple) |
+
+15,913 households (3.1%) report zero income; no percentage raise of any size ever reaches
+them. Across all 520,257: a raise of 10% or less would clear 9.5% of them; more than half
+need over 81.8% (their income would need to nearly double); even the calculator's own
+maximum wage-slider setting, +50%, reaches only 35.8%. By income band the direction is
+intuitive but the size is not — under $15,000 needs a median 770% raise (nearly 9×
+income); $150,000–199,999 needs 12%.
+
+The single-adult, no-children group is both the largest bloc below budget (finding 1) and,
+per household, the one furthest from clearing it on wages alone — the two findings sit
+side by side without contradicting each other, because "most common" and "furthest from
+the line" are different rankings of the same population. `[DERIVED RESULT]` — cross-validated
+against the calculator's own precomputed grid at all nine wage steps: recomputed
+remaining-vulnerable counts match the shipped grid to within 5 households at every step
+(the project's own documented cent-rounding tolerance), exactly at six of nine. See
+`policy_calculator/wage_distance_analysis.py`.
+
 ---
 
 ## External cross-check
