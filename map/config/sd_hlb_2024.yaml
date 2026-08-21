@@ -1,0 +1,39 @@
+# Maps the organizers' HLB dataset's raw columns onto the canonical schema:
+# geo_id, geo_name, geo_type, sample_size, income_measure, need_measure,
+# vulnerable_flag.
+#
+# Downstream code (src/aggregate.py) must reference ONLY canonical column
+# names. To point the pipeline at a different dataset, write a new config
+# like this one rather than editing the pipeline code.
+
+dataset_name: san_diego_ca_hlb_hackathon_2024
+
+# Relative to this config file's own directory, so it resolves the same way
+# regardless of the working directory aggregate.py is invoked from. This is
+# the repo's shared raw file (data/raw/), not a private copy — read directly,
+# pandas decompresses the .gz on the fly.
+source_csv: ../../data/raw/san_diego_ca_hlb_hackathon_2024.csv.gz
+
+geo_key: geoid          # 11-digit census tract GEOID (2020 vintage)
+geo_type: tract
+
+income_col: hh_income                    # actual household income, 2024 USD/year
+need_col: hlb_year                       # income required to afford the budget, 2024 USD/year
+vulnerable_col: economically_vulnerable  # 1 if hh_income < hlb_year
+
+# taxes_on_actual_income_year is the correct per-household tax figure if ever
+# needed downstream (residual/disposable income, effective tax rate).
+# hlb_taxes_year is a threshold-building intermediate only — never use it as
+# a household's tax bill.
+tax_col: taxes_on_actual_income_year
+
+min_sample_size: 100
+
+# Columns to load from the source CSV. Kept minimal to bound memory on a
+# 175MB file; add columns here (and to canonical mapping/usage) as needed.
+usecols:
+  - geoid
+  - hh_income
+  - hlb_year
+  - economically_vulnerable
+  - taxes_on_actual_income_year

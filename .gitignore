@@ -7,3 +7,7 @@ venv/
 node_modules/
 outputs/*
 !outputs/.gitkeep
+
+# map/: Census TIGER shapefile + generated GeoJSON are large and regenerable
+# via map/src/build_boundaries.py — never commit them.
+map/data/
