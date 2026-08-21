@@ -1,80 +1,36 @@
 # data/raw/ — source files, unmodified
 
-Put the organizers' original dataset files here, exactly as downloaded. Don't
-edit them. `data/ingest.py` reads from here and writes `data/zips.csv`, which
-is what the map and the policy calculator actually consume.
+Do not edit these. `../build_dataset.py` reads from here.
 
-Keeping the raw file committed means anyone can re-run the import, and we can
-show a judge exactly how a source column became one of ours.
+| file | what it is |
+|---|---|
+| `san_diego_ca_hlb_hackathon_2024.csv.gz` | The dataset. 1,171,123 synthetic households, 25 columns, 2024 dollars. 16.7 MB gzipped, 175 MB decompressed. |
+| `San_Diego_HLB_Hackathon_Data_Dictionary.docx` | The organizers' full dictionary. **Read this before doing analysis.** |
+| `data_dictionary_2024.csv` | Column-by-column summary of the same. |
 
-## Getting the Affordability dataset in here
+## Working with the big file
 
-The dataset lives in a Google Drive folder shared by the organizers
-(`Affordability`, owned by adir@datasciencealliance.org).
+Read the gzip directly — pandas handles it, and there is no reason to unpack
+175 MB onto disk:
 
-**Heads up on a permissions gotcha:** the folder is shared, but the files
-*inside* it were shared only by inheriting the folder — which means automated
-tools that connect to Drive see the folder as empty. If you're scripting
-against Drive and getting nothing back, that's why. Download through the
-browser instead, or ask the organizers to share the files directly.
+```python
+df = pd.read_csv("san_diego_ca_hlb_hackathon_2024.csv.gz", dtype={"geoid": str, "puma": str})
+```
 
-Steps:
+**Do not open it in Excel or Google Sheets.** Both cap out around a million
+rows and will truncate it silently, which is a good way to present a number
+that is quietly wrong.
 
-1. Open the folder in your browser and download the file(s).
-2. Drop them in this directory.
-3. Import **all of them at once** — point the importer at this whole folder and
-   it merges every tabular file on its ZIP column:
-   ```bash
-   cd data
-   python ingest.py            # defaults to raw/
-   ```
-   Files without a recognizable ZIP column (a readme, a data dictionary) are
-   skipped with a note rather than failing the run.
+## Where it came from
 
-   To look before you leap, inspect a single file first:
-   ```bash
-   python ingest.py --inspect raw/<the-file>.csv
-   ```
-   It prints every column and which of our fields it maps to.
+A Google Drive folder shared by the organizers (`Affordability`, owned by
+adir@datasciencealliance.org).
 
-   For anything it couldn't map automatically, pass it explicitly:
-   ```bash
-   python ingest.py --income-col 'Median HH Income' --area-col 'Community'
-   ```
-5. Regenerate the prototype's embedded copy and flip its banner to live data:
-   ```bash
-   cd ../policy_calculator
-   python sync_data.py --real
-   ```
-6. Commit the raw file, `data/zips.csv`, and `prototype.html` together, so the
-   source and the derived data never drift apart.
+**A permissions gotcha worth knowing:** the folder was shared, but the files
+inside it were not shared individually. Tools that connect to Drive
+programmatically therefore see the folder as empty — not as an error, just
+zero results. If you are scripting against Drive and getting nothing back,
+that is why, and no amount of retrying fixes it. Download through the browser,
+or ask the organizers to share the files themselves rather than the folder.
 
-## Nothing from Drive is in this repo yet
-
-To be unambiguous, because it matters: **`data/zips.csv` contains invented
-placeholder values.** Not a partial import, not a subset of the real data —
-none of the organizers' data has ever reached this repo. Every number in it
-was made up to make the pipeline runnable.
-
-Until someone completes the steps above, treat every figure in the demo as
-illustrative, and leave the `PLACEHOLDER` banner in the prototype alone.
-
-## What the importer handles for you
-
-- **multiple files merged on ZIP** — point it at this folder and it joins them
-
-- `$1,900` and `5.5%` style formatting
-- rates given either as `0.055` or as `5.5`
-- ZIP columns named `ZCTA`, `ZCTA5`, `GEOID`, `zip_code`, …
-- deriving `rent_burden_pct` as `(rent × 12) / income` when the source lacks it
-- deriving `runway_months` from burden and the two growth rates
-- picking the featured ZIPs (the N with least runway) when the source has no
-  `featured` flag
-
-## What it will warn you about
-
-If the source has **no rent-growth or income-growth columns**, the importer
-fills in a flat default for every ZIP and prints a warning. Every runway number
-depends on those two rates, so a flat default makes the output a demonstration
-of the method, not a finding. Find the real growth figures before presenting,
-or say plainly that the rates are assumed.
+The files are committed here so nobody on the team has to fight that twice.

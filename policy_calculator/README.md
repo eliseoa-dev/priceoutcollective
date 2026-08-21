@@ -1,54 +1,50 @@
 # policy_calculator/
 
-"What would help" — takes the shared per-ZIP data (`data/zips.csv`) and
-recomputes the runway metric under a few policy levers, so we can show
-before/after per ZIP.
+"What would actually help" — three policy levers, recomputed across all
+1,171,123 San Diego households.
 
-## Scenarios (defaults, tweak in `scenarios.py`)
+## The demo
 
-1. **Minimum wage +8%** — one-time income bump, growth trends unchanged.
-2. **Rent stabilization (3%/yr cap)** — caps rent growth at the policy
-   ceiling instead of the current trend.
-3. **Housing voucher (50% of gap)** — covers half the gap between current
-   rent burden and the 30% "affordable" line.
+Open **`prototype.html`** in a browser. No build step, no server, no
+dependencies. Everything it needs is embedded.
 
-All three reuse the same runway formula the map uses — see the docstring
-in `scenarios.py` for the exact math. **If the map's runway definition
-differs from what's documented there, tell us — we'll line them up before
-the joint rehearsal.**
+Three levers:
 
-## The demo piece: `prototype.html`
+1. **Wage floor** — raises every household's income by a set percentage.
+2. **Rent ceiling** — a housing voucher: the household pays at most this share
+   of income toward rent, `min(FMR, cap × income)`.
+3. **Childcare subsidy** — covers this share of childcare cost.
 
-`prototype.html` is the thing to actually show. Open it in a browser — no
-build step, no server, no dependencies. Three sliders (wage, rent cap,
-voucher); every ZIP's runway recomputes live, before vs. after, with a
-table view and a methodology section built in.
+## The point to make on stage
 
-The data is embedded at the top of its `<script>` block in the same shape as
-`data/zips.csv`. When the real export lands, paste the rows in there (and
-into the CSV) and everything updates.
+At +25% wages, a 30%-of-income rent cap, and a 50% childcare subsidy,
+**193,555 households are lifted above their living budget** — 44.4% down to
+27.9%. The unit chart shows that mass moving.
 
-The Python path below produces the same numbers as a static chart + CSV, for
-anyone who'd rather work in pandas.
+The sharper point is the childcare callout. Countywide, a 50% childcare
+subsidy moves vulnerability by 0.8 points and looks like a rounding error.
+Among the 21.7% of households with children under 12 — who start at 58%
+vulnerable rather than 40.7% — it moves 3.9 points.
 
-## Run it
+**A lever can look like nothing countywide and still be the right policy,
+because the average hides who it reaches.** That is the close.
+
+## How it stays honest
+
+Nothing is estimated at display time. `data/build_dataset.py` evaluates every
+one of the 315 lever combinations against all 1.17M households and writes exact
+rates to `data/grid.json`; the sliders step through those precomputed settings.
+
+The baseline count shown (520,257) is the organizers' own published figure, not
+one re-derived from a rounded rate.
+
+## Rebuilding
 
 ```bash
-pip install -r requirements.txt
-python run.py                 # all ZIPs
-python run.py --featured-only # just the map's called-out ZIPs
+cd ../data && python build_dataset.py --validate
+cd ../policy_calculator && python sync_data.py
 ```
 
-Outputs land in `../outputs/`:
-- `policy_runway_table.csv` — runway today vs. each scenario, per ZIP
-- `policy_runway_chart.png` — grouped bar chart of the same
-
-Ships with dummy data in `data/zips.csv` so this runs standalone right
-now — swap in the real export whenever it's ready, same column names.
-
-## Demo-ready sanity check
-
-`runway_today` in the output table should roughly match the `runway_months`
-column already in `data/zips.csv` (it's recomputed from `rent_burden_pct` /
-growth rates independently, as a sanity check that the shared formula
-lines up before we present).
+`sync_data.py` regenerates the page's embedded copy of `grid.json`. CI runs
+`python sync_data.py --check` and fails the build if the page and the pipeline
+have drifted — so a stale demo cannot reach `main`.
