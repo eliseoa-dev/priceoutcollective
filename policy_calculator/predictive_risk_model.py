@@ -13,6 +13,7 @@ real, imperfect score -- not the ~99.9% a leaky feature set would produce.
 """
 
 from pathlib import Path
+import argparse
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -52,11 +53,22 @@ def build_features(df):
     return X, y
 
 
-def train_model(X, y):
+def train_model(X, y, groups=None):
     print("\n--- Training Predictive Risk Classifier (income + household + location only) ---")
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    if groups is not None:
+        # Rows are clones of 55,218 PUMS donors. A random split puts the same donor
+        # pattern on both sides, so the test score measures memorisation. Grouping on
+        # donor-invariant columns guarantees a donor never straddles the split.
+        from sklearn.model_selection import GroupShuffleSplit
+        tr, te = next(GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+                      .split(X, y, groups))
+        X_train, X_test, y_train, y_test = X.iloc[tr], X.iloc[te], y.iloc[tr], y.iloc[te]
+        print(f"Split: GROUP-AWARE on {groups.nunique():,} donor-invariant groups.")
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+        print("Split: row-level random. See the warning printed after the metrics.")
     print(f"Train size: {len(X_train):,}, Test size: {len(X_test):,}")
 
     model = xgb.XGBClassifier(
@@ -78,9 +90,22 @@ def train_model(X, y):
     print(f"Accuracy: {acc:.4%}")
     print(f"ROC-AUC: {auc:.4f}")
     print(
-        "(No itemized cost columns were used as features -- this score reflects "
-        "genuine prediction from income/household/location, not label reconstruction. "
-        "Compare to the leaky version's 0.9999 AUC before the earlier fix.)"
+        "\n  READ THIS BEFORE QUOTING THE NUMBER ABOVE.\n"
+        "  The earlier leak is genuinely fixed: no itemized cost column is used as a\n"
+        "  feature. But this score is still not evidence of predictive skill, and it\n"
+        "  must not be presented as one.\n\n"
+        "  hlb_year is a DETERMINISTIC LOOKUP on (tract x composition): all 62,032\n"
+        "  cells hold exactly one value, max within-cell std $0.00, R2 = 1.000000.\n"
+        "  So a four-line median-lookup classifies all 1,171,123 households at\n"
+        "  100.000000% accuracy, and beats this model on every seed. What the model\n"
+        "  loses is only the blur from using PUMA (3,079 cells) instead of tract.\n\n"
+        "  The split above is also row-level random, and rows are clones: 55,218 PUMS\n"
+        "  donors were resampled into 1.17M rows, so ~99.97% of test rows have an\n"
+        "  exact feature-vector twin sitting in train. Run with --group-aware for a\n"
+        "  split that never puts the same donor pattern on both sides.\n\n"
+        "  Banned framings: 'AI predicts poverty', 'predicts vulnerability with 97%\n"
+        "  accuracy', or any wording implying a discovered relationship. The\n"
+        "  relationship is a published formula over public inputs.\n"
     )
     print("\nClassification Report:")
     report = classification_report(y_test, y_pred, digits=4)
@@ -139,11 +164,31 @@ def write_metrics(acc, auc, report_dict, out_path):
     print(f"Wrote metrics summary to {out_path}")
 
 
+def donor_groups(df):
+    """A key that provably never splits a PUMS donor across a train/test fold.
+
+    Every component is donor-invariant (income and the six age-band counts are
+    properties of the donor, not of the tract it was placed in), so each group is a
+    union of whole donors. It is conservative: it merges some distinct donors, which
+    makes the split stricter than true donor grouping, never looser.
+    """
+    cols = ["hh_income", "no_adult", "no_teenager", "no_schooler",
+            "no_preschooler", "no_toddler", "no_infant"]
+    return df[cols].astype(str).agg("|".join, axis=1)
+
+
 def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--group-aware", action="store_true",
+                    help="split on donor-invariant groups instead of at random; "
+                         "this is the only metric worth quoting")
+    args = ap.parse_args()
+
     OUTPUT_DIR.mkdir(exist_ok=True)
     df = load_data()
     X, y = build_features(df)
-    model, acc, auc, report_dict = train_model(X, y)
+    groups = donor_groups(df) if args.group_aware else None
+    model, acc, auc, report_dict = train_model(X, y, groups)
 
     plot_feature_importance(model, X.columns, OUTPUT_DIR / "predictive_risk_feature_importance.png")
     write_metrics(acc, auc, report_dict, OUTPUT_DIR / "predictive_risk_metrics.csv")
