@@ -7,3 +7,5 @@ venv/
 node_modules/
 outputs/*
 !outputs/.gitkeep
+data/*.csv
+!data/zips.csv
