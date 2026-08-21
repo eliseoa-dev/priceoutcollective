@@ -1,0 +1,26 @@
+column,type,units,description,in_release
+synpop_hh_id,integer,id,Unique synthetic household identifier. Not a real household.,TRUE
+geoid,character,FIPS,11-digit census tract GEOID (2020 vintage). Join key for tract geography.,TRUE
+puma,character,FIPS,"5-digit Public Use Microdata Area code, a coarser geography than tract.",TRUE
+no_adult,integer,persons,Household members aged 19 and over.,TRUE
+no_teenager,integer,persons,"Household members aged 12-18. NOTE: includes 18-year-olds, unlike Census 'under 18'.",TRUE
+no_schooler,integer,persons,Household members aged 6-11.,TRUE
+no_preschooler,integer,persons,Household members aged 4-5.,TRUE
+no_toddler,integer,persons,Household members aged 1-3.,TRUE
+no_infant,integer,persons,Household members aged under 1.,TRUE
+hh_size,integer,persons,"Total household size, the sum of the six age-band counts.",TRUE
+hh_size_recode,integer,category,Household size capped at 5 (5 means 5 or more). Drives the housing bedroom lookup.,TRUE
+hh_income_cat,character,category,"ACS S1901 income band, 9 categories.",TRUE
+hh_income,numeric,2024 USD / year,Annual household income in constant 2024 dollars (PUMS HINCP with ADJINC applied). Negative values floored to zero.,TRUE
+food_cost_month,numeric,2024 USD / month,"Food cost: USDA 2024 Low-cost plan per person by age band, times a household-size economies-of-scale factor.",TRUE
+childcare_cost_month,numeric,2024 USD / month,"Childcare cost: family child care home weekly rates times 4, for children under 12. Charged whenever children are present, regardless of adult labour force participation.",TRUE
+housing_cost_month,numeric,2024 USD / month,"REQUIRED rent, not rent paid: HUD FY2024 Small Area FMR for the tract at the bedroom count implied by household size. Not tenure-adjusted; owners receive an imputed market rent.",TRUE
+transp_cost_month,numeric,2024 USD / month,Transportation cost: adults times the tract per-adult cost. Households with no adult aged 19+ therefore receive $0.,TRUE
+broadband_cost_month,numeric,2024 USD / month,"Lowest advertised broadband price in the tract. 141,050 households in 84 tracts receive a household-size-category mean fill.",TRUE
+healthcare_cost_month,numeric,2024 USD / month,Healthcare cost: employee share of age-banded premiums plus the amortised annual out-of-pocket maximum.,TRUE
+other_cost_month,numeric,2024 USD / month,"Other essentials, defined as 20% of food plus housing.",TRUE
+hlb_no_tax_year,numeric,2024 USD / year,Annual Household Living Budget before tax: 12 times the sum of the seven monthly cost components.,TRUE
+hlb_taxes_year,numeric,2024 USD / year,"Tax owed on the BUDGET income, from solving Y = C + T(Y) to convergence. Use for building the threshold ONLY. This is NOT this household's tax bill.",TRUE
+hlb_year,numeric,2024 USD / year,Total annual income required to afford the budget: hlb_no_tax_year + hlb_taxes_year.,TRUE
+taxes_on_actual_income_year,numeric,2024 USD / year,"Tax owed on this household's ACTUAL income. Use this for residual income, disposable income, effective tax rates and the Food Coverage Ratio. Can be negative where refundable credits exceed liability.",TRUE
+economically_vulnerable,integer,0/1,1 if hh_income < hlb_year. A like-for-like comparison: both sides are gross annual income in 2024 dollars.,TRUE
