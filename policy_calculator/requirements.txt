@@ -1,0 +1,6 @@
+# Dependencies for the standalone analysis scripts in this folder.
+# prototype.html needs none of this — it is self-contained.
+pandas>=2.0
+matplotlib>=3.7
+scikit-learn>=1.4
+xgboost>=2.0

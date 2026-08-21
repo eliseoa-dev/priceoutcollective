@@ -48,3 +48,30 @@ cd ../policy_calculator && python sync_data.py
 `sync_data.py` regenerates the page's embedded copy of `grid.json`. CI runs
 `python sync_data.py --check` and fails the build if the page and the pipeline
 have drifted — so a stale demo cannot reach `main`.
+
+## Standalone analysis scripts
+
+Two scripts from `feature/ml-vulnerability-simulator`, both reading the shared
+gzip directly. They need `pip install -r requirements.txt` (pandas, matplotlib,
+scikit-learn, xgboost); `prototype.html` needs none of it.
+
+**`ml_vulnerability_simulator.py`** — recomputes the HLB formula per household
+under four policy scenarios. Independent of `data/build_dataset.py`, and the two
+agree: both reproduce the shipped `economically_vulnerable` flag to 99.9999%
+(one household in 1,171,123), and both put a 50% childcare subsidy at 43.58%.
+Two implementations converging is worth more than either alone.
+
+**`predictive_risk_model.py`** — predicts vulnerability from income, household
+composition, and PUMA only, deliberately excluding the itemized cost columns
+that define the label. 97.3% accuracy, 0.998 AUC.
+
+Worth stating carefully when presenting it: this is not forecasting an
+uncertain outcome. `economically_vulnerable` is a deterministic function of
+costs, and costs are largely determined by household composition (food,
+childcare, bedroom count) and geography (FMR, transport). So the model is
+recovering a known formula from proxies, and the residual 2.7% is mostly PUMA
+being coarser than tract. That makes it a legitimate finding — **who you are
+and where you live nearly determine your need threshold** — rather than
+evidence of predictive power over something genuinely unknown. Useful for
+outreach screening, where a program has income and household size but not an
+itemized budget.
