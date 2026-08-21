@@ -46,6 +46,16 @@ jobs:
             exit 1
           }
 
+      - name: Gap map matches map/output/gap_map_data.json
+        working-directory: map
+        run: |
+          python sync_gap_map.py --check || {
+            echo ""
+            echo "gap_map.html's embedded data is out of date."
+            echo "Fix: cd map && python sync_gap_map.py"
+            exit 1
+          }
+
       - name: Pipeline reproduces the organizers' vulnerability flag
         working-directory: data
         run: |

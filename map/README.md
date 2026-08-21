@@ -7,6 +7,34 @@ hand-picked tracts called out by name and category ("already priced out,"
 
 **Live demo:** https://priceout-collective.surge.sh
 
+## gap_map.html — click a tract to see what its own gap is made of
+
+A second, complementary map. `sd_affordability_map.html` answers *how many*
+households fall short, tract by tract; **`gap_map.html`** answers the next
+question — in any one tract, what does that gap actually consist of? Click
+any of the 727 reliable tracts and the side panel shows that tract's own
+mean-monthly balance sheet (housing, transportation, healthcare, food, other
+essentials, childcare, broadband, tax) among its households below budget —
+same seven components and method as the calculator's county-wide figure,
+computed per tract instead. Open **`gap_map.html`** directly, or use the "Gap
+by Tract" tab in the top-level `index.html`.
+
+```bash
+python src/build_boundaries.py   # only needed once, or if boundaries change
+python build_gap_map_data.py     # -> output/gap_map_data.json (727 tracts, geometry + balance sheet)
+python sync_gap_map.py           # embeds it into gap_map.html
+python sync_gap_map.py --check
+```
+
+`build_gap_map_data.py` reads the raw microdata directly (not through the
+config-driven adapter below — the balance sheet is deliberately tied to this
+dataset's own cost columns, the same way `policy_calculator/wage_distance_analysis.py`
+is) and simplifies the TIGER boundary geometry for embedding (~11m tolerance,
+5-decimal coordinate rounding — county-map scale, not parcel scale). It
+cross-checks its own output the same way `data/build_dataset.py` does: the
+county-wide balance sheet it computes must match `data/grid.json`'s exactly,
+and every tract's components must sum to its own total.
+
 ## Config-driven — the point of this piece
 
 `config/sd_hlb_2024.yaml` maps this dataset's raw column names onto a
