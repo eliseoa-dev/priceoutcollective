@@ -22,19 +22,24 @@ Steps:
 
 1. Open the folder in your browser and download the file(s).
 2. Drop them in this directory.
-3. Look at what you got:
+3. Import **all of them at once** — point the importer at this whole folder and
+   it merges every tabular file on its ZIP column:
    ```bash
    cd data
+   python ingest.py            # defaults to raw/
+   ```
+   Files without a recognizable ZIP column (a readme, a data dictionary) are
+   skipped with a note rather than failing the run.
+
+   To look before you leap, inspect a single file first:
+   ```bash
    python ingest.py --inspect raw/<the-file>.csv
    ```
    It prints every column and which of our fields it maps to.
-4. Import it:
-   ```bash
-   python ingest.py raw/<the-file>.csv
-   ```
+
    For anything it couldn't map automatically, pass it explicitly:
    ```bash
-   python ingest.py raw/<the-file>.csv --income-col 'Median HH Income' --area-col 'Community'
+   python ingest.py --income-col 'Median HH Income' --area-col 'Community'
    ```
 5. Regenerate the prototype's embedded copy and flip its banner to live data:
    ```bash
@@ -44,7 +49,19 @@ Steps:
 6. Commit the raw file, `data/zips.csv`, and `prototype.html` together, so the
    source and the derived data never drift apart.
 
+## Nothing from Drive is in this repo yet
+
+To be unambiguous, because it matters: **`data/zips.csv` contains invented
+placeholder values.** Not a partial import, not a subset of the real data —
+none of the organizers' data has ever reached this repo. Every number in it
+was made up to make the pipeline runnable.
+
+Until someone completes the steps above, treat every figure in the demo as
+illustrative, and leave the `PLACEHOLDER` banner in the prototype alone.
+
 ## What the importer handles for you
+
+- **multiple files merged on ZIP** — point it at this folder and it joins them
 
 - `$1,900` and `5.5%` style formatting
 - rates given either as `0.055` or as `5.5`

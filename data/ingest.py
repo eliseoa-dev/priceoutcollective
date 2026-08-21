@@ -60,18 +60,82 @@ def norm(name: str) -> str:
     return "".join(ch for ch in str(name).lower() if ch.isalnum())
 
 
-def load_any(path: Path) -> pd.DataFrame:
-    if not path.exists():
-        sys.exit(
-            f"error: {path} not found.\n"
-            f"       Put the source file in {RAW_DIR}/ first — see data/raw/README.md."
-        )
+TABULAR_SUFFIXES = (".csv", ".tsv", ".xlsx", ".xlsm")
+
+
+def load_one(path: Path) -> pd.DataFrame:
     suffix = path.suffix.lower()
     if suffix in (".xlsx", ".xlsm"):
         return pd.read_excel(path)
     if suffix == ".tsv":
         return pd.read_csv(path, sep="\t")
     return pd.read_csv(path)
+
+
+def zip_column_of(df: pd.DataFrame) -> str | None:
+    lookup = {norm(c): c for c in df.columns}
+    for alias in ALIASES["zip"]:
+        if norm(alias) in lookup:
+            return lookup[norm(alias)]
+    return None
+
+
+def load_any(path: Path) -> pd.DataFrame:
+    """Load one file, or merge every tabular file in a directory on its ZIP column.
+
+    The organizers ship the dataset as several files (one per metric or per
+    source table). Pointing this at data/raw/ joins them into one frame so the
+    rest of the import doesn't care how many files there were.
+    """
+    if not path.exists():
+        sys.exit(
+            f"error: {path} not found.\n"
+            f"       Put the source file(s) in {RAW_DIR}/ first — see data/raw/README.md."
+        )
+
+    if path.is_file():
+        return load_one(path)
+
+    files = sorted(p for p in path.iterdir() if p.suffix.lower() in TABULAR_SUFFIXES)
+    if not files:
+        sys.exit(
+            f"error: no .csv/.tsv/.xlsx files in {path}/.\n"
+            f"       Download the dataset into that folder — see data/raw/README.md."
+        )
+
+    merged: pd.DataFrame | None = None
+    for f in files:
+        part = load_one(f)
+        zcol = zip_column_of(part)
+        if zcol is None:
+            print(f"warning: {f.name} has no recognizable ZIP column — skipping it.")
+            print(f"         Columns: {', '.join(map(str, part.columns))}")
+            continue
+
+        # Normalize the join key so 92113, '92113' and '92113-1234' all match.
+        part = part.copy()
+        part["_zip"] = part[zcol].astype(str).str.extract(r"(\d{5})", expand=False)
+        part = part.dropna(subset=["_zip"]).drop_duplicates(subset="_zip", keep="first")
+        part = part.drop(columns=[zcol])
+
+        print(f"  read {f.name:<40} {len(part):>5} rows, {len(part.columns) - 1} columns")
+
+        if merged is None:
+            merged = part
+        else:
+            overlap = (set(part.columns) & set(merged.columns)) - {"_zip"}
+            if overlap:
+                # Keep the first file's version; suffix the newcomer so nothing
+                # is silently overwritten and you can see the collision.
+                part = part.rename(columns={c: f"{c}__{f.stem}" for c in overlap})
+            merged = merged.merge(part, on="_zip", how="outer")
+
+    if merged is None:
+        sys.exit("error: none of the files had a usable ZIP column.")
+
+    merged = merged.rename(columns={"_zip": "zip"})
+    print(f"  merged {len(files)} file(s) -> {len(merged)} ZIPs, {len(merged.columns)} columns\n")
+    return merged
 
 
 def find_column(df: pd.DataFrame, field: str, override: str | None) -> str | None:
@@ -122,7 +186,9 @@ def runway_months(burden: float, rent_g: float, income_g: float) -> float:
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("source", type=Path, nargs="?", help="path to the source csv/tsv/xlsx")
+    p.add_argument("source", type=Path, nargs="?", default=RAW_DIR,
+                   help="source file, or a directory whose tabular files are merged "
+                        f"on their ZIP column (default: {RAW_DIR.name}/)")
     p.add_argument("--inspect", action="store_true",
                    help="print the source's columns and a preview, then exit")
     for field in ALIASES:
@@ -132,9 +198,6 @@ def main() -> None:
                    help="if the source has no 'featured' column, flag the N ZIPs "
                         "with the least runway (default 8)")
     args = p.parse_args()
-
-    if not args.source:
-        p.error("give me a source file, or use --inspect to look at one first")
 
     df = load_any(args.source)
 
