@@ -37,8 +37,20 @@
     .panel { display:none; }
     .panel.active { display:block; }
     iframe { display:block; width:100%; height:max(720px, calc(100vh - 175px)); border:0; background:#fff; }
-    footer { display:flex; justify-content:space-between; gap:20px; padding:18px 4px 0; color:var(--muted); font-size:11px; line-height:1.5; }
-    footer span:last-child { text-align:right; }
+    .about { padding:28px clamp(16px,4vw,40px); max-width:680px; }
+    .about h2 { margin:0 0 14px; font:400 clamp(24px,3.2vw,34px)/1.05 "Libre Caslon Display", Georgia, serif; letter-spacing:-.02em; }
+    .about p { margin:0 0 14px; color:var(--muted); font-size:14px; line-height:1.6; }
+    .about ul { list-style:none; margin:0 0 18px; padding:0; display:grid; gap:6px; }
+    .about li { font-size:14px; line-height:1.5; color:var(--muted); }
+    .about li b { color:var(--ink); font-weight:600; }
+    .about .rights { margin-top:22px; padding-top:14px; border-top:1px solid var(--rule); font-size:11px; }
+    .about a { color:var(--red); text-underline-offset:3px; }
+    footer { padding:18px 4px 0; color:var(--muted); font-size:11px; line-height:1.5; }
+    .footer-top { display:flex; justify-content:space-between; gap:20px; }
+    .footer-top span:last-child { text-align:right; }
+    .footer-credits { margin-top:14px; padding-top:14px; border-top:1px solid var(--rule); }
+    .footer-credits p { margin:0 0 4px; }
+    .footer-credits p:last-child { margin:0; }
     @media (max-width:760px) {
       .shell { width:100%; padding:0; }
       header { grid-template-columns:1fr; padding:24px 18px 20px; }
@@ -48,8 +60,9 @@
       button { flex:1; padding:11px 8px; font-size:10px; }
       .full { display:none; }
       iframe { height:calc(100vh - 58px); min-height:680px; }
-      footer { padding:16px 18px 22px; flex-direction:column; }
-      footer span:last-child { text-align:left; }
+      footer { padding:16px 18px 22px; }
+      .footer-top { flex-direction:column; }
+      .footer-top span:last-child { text-align:left; }
     }
   </style>
 </head>
@@ -72,6 +85,7 @@
         <div class="tabs" role="tablist" aria-label="Choose a demo view">
           <button id="calculator-tab" role="tab" aria-selected="true" aria-controls="calculator-panel">Policy Calculator</button>
           <button id="map-tab" role="tab" aria-selected="false" aria-controls="map-panel">County Map</button>
+          <button id="about-tab" role="tab" aria-selected="false" aria-controls="about-panel">Team &amp; Credits</button>
         </div>
         <a class="full" id="full-link" href="policy_calculator/prototype.html">Open this view full screen ↗</a>
       </div>
@@ -82,11 +96,33 @@
       <div class="panel" id="map-panel" role="tabpanel" aria-labelledby="map-tab" hidden>
         <iframe title="Interactive San Diego County affordability map" data-src="map/output/sd_affordability_map.html" loading="lazy"></iframe>
       </div>
+      <div class="panel" id="about-panel" role="tabpanel" aria-labelledby="about-tab" hidden>
+        <div class="about">
+          <h2>Team &amp; Credits</h2>
+          <p>Built by PriceOut Collective for the Building for Good Hackathon, hosted by the Data Science Alliance at UC San Diego, San Diego County, 2024/2026.</p>
+          <ul>
+            <li><b>Arash</b> — affordability map</li>
+            <li><b>Eliseo</b> — policy calculator &amp; data pipeline</li>
+            <li><b>Kyaw Soe Lwin</b> — predictive vulnerability model</li>
+            <li><b>Laine</b> — unified demo integration</li>
+            <li><b>Saghar</b> — wage-distance analysis</li>
+          </ul>
+          <p>With review and feedback from Richard.</p>
+          <p>Household Living Budget data modeled from the organizers' 2024 hackathon dataset — see <a href="policy_calculator/prototype.html#method">Method &amp; limits</a> for full methodology.</p>
+          <p class="rights">© 2026 PriceOut Collective. Built during a hackathon for demonstration purposes. Not for reproduction or commercial use without permission.</p>
+        </div>
+      </div>
     </section>
 
     <footer>
-      <span>Computed from 1,171,123 synthetic households. Results describe populations, never individuals.</span>
-      <span>Data Science Alliance · UC San Diego · Affordability track</span>
+      <div class="footer-top">
+        <span>Computed from 1,171,123 synthetic households. Results describe populations, never individuals.</span>
+        <span>Data Science Alliance · UC San Diego · Affordability track</span>
+      </div>
+      <div class="footer-credits">
+        <p>Built by PriceOut Collective — Arash, Eliseo, Kyaw Soe Lwin, Laine, Saghar — with review and feedback from Richard — for the Building for Good Hackathon, UC San Diego, Data Science Alliance, San Diego County.</p>
+        <p>© 2026 PriceOut Collective. Built during a hackathon for demonstration purposes. Not for reproduction or commercial use without permission.</p>
+      </div>
     </footer>
   </main>
 
@@ -95,7 +131,8 @@
       "use strict";
       var views = {
         calculator: { tab: "calculator-tab", panel: "calculator-panel", href: "policy_calculator/prototype.html" },
-        map: { tab: "map-tab", panel: "map-panel", href: "map/output/sd_affordability_map.html" }
+        map: { tab: "map-tab", panel: "map-panel", href: "map/output/sd_affordability_map.html" },
+        about: { tab: "about-tab", panel: "about-panel" }
       };
 
       function select(name, updateHash) {
@@ -109,15 +146,18 @@
         });
         var chosen = views[name];
         var frame = document.querySelector("#" + chosen.panel + " iframe");
-        if (!frame.getAttribute("src")) frame.setAttribute("src", frame.getAttribute("data-src"));
-        document.getElementById("full-link").href = chosen.href;
+        if (frame && !frame.getAttribute("src")) frame.setAttribute("src", frame.getAttribute("data-src"));
+        var fullLink = document.getElementById("full-link");
+        fullLink.style.display = chosen.href ? "" : "none";
+        if (chosen.href) fullLink.href = chosen.href;
         if (updateHash && history.replaceState) history.replaceState(null, "", "#" + name);
       }
 
       Object.keys(views).forEach(function (name) {
         document.getElementById(views[name].tab).addEventListener("click", function () { select(name, true); });
       });
-      select(location.hash === "#map" ? "map" : "calculator", false);
+      var initial = location.hash === "#map" ? "map" : location.hash === "#about" ? "about" : "calculator";
+      select(initial, false);
     })();
   </script>
 </body>
